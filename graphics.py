@@ -24,11 +24,18 @@ except AttributeError:
         return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_Window(object):
-    def setupUi(self, Window):
-        Window.setObjectName(_fromUtf8("Window"))
-        Window.resize(480, 560)
-        Window.setAnimated(True)
-        self.centralwidget = QtGui.QWidget(Window)
+    def __init__(self):
+        self.setupUi()
+        self.retranslateUi()
+        self.start()
+
+    def setupUi(self):
+        """Affiche tous les éléments de l'interface principale"""
+        self.window = QtGui.QMainWindow()
+        self.window.setObjectName(_fromUtf8("Window"))
+        self.window.resize(480, 560)
+        self.window.setAnimated(True)
+        self.centralwidget = QtGui.QWidget(self.window)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.gridLayoutWidget = QtGui.QWidget(self.centralwidget)
         self.gridLayoutWidget.setGeometry(QtCore.QRect(0, 0, 481, 541))
@@ -54,23 +61,23 @@ class Ui_Window(object):
         self.game_layout.addWidget(self.score_2, 8, 2, 1, 1)
         self.gridLayoutWidget.raise_()
         self.player_2.raise_()
-        Window.setCentralWidget(self.centralwidget)
-        self.menubar = QtGui.QMenuBar(Window)
+        self.window.setCentralWidget(self.centralwidget)
+        self.menubar = QtGui.QMenuBar(self.window)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 480, 21))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menuOthello = QtGui.QMenu(self.menubar)
         self.menuOthello.setObjectName(_fromUtf8("menuOthello"))
         self.menuOptions = QtGui.QMenu(self.menubar)
         self.menuOptions.setObjectName(_fromUtf8("menuOptions"))
-        Window.setMenuBar(self.menubar)
-        self.statusbar = QtGui.QStatusBar(Window)
+        self.window.setMenuBar(self.menubar)
+        self.statusbar = QtGui.QStatusBar(self.window)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
-        Window.setStatusBar(self.statusbar)
-        self.action_new_game = QtGui.QAction(Window)
+        self.window.setStatusBar(self.statusbar)
+        self.action_new_game = QtGui.QAction(self.window)
         self.action_new_game.setObjectName(_fromUtf8("action_new_game"))
-        self.action_undo = QtGui.QAction(Window)
+        self.action_undo = QtGui.QAction(self.window)
         self.action_undo.setObjectName(_fromUtf8("action_undo"))
-        self.action_stats = QtGui.QAction(Window)
+        self.action_stats = QtGui.QAction(self.window)
         self.action_stats.setObjectName(_fromUtf8("action_stats"))
         self.menuOthello.addAction(self.action_new_game)
         self.menuOthello.addAction(self.action_undo)
@@ -78,45 +85,57 @@ class Ui_Window(object):
         self.menubar.addAction(self.menuOthello.menuAction())
         self.menubar.addAction(self.menuOptions.menuAction())
 
-        self.retranslateUi(Window)
-        QtCore.QMetaObject.connectSlotsByName(Window)
+        self.length = 8
+        self.buttons = [[OthelloCell()
+            for i in range(self.length)]
+            for j in range(self.length)]
+        for i in range(self.length):
+            for j in range(self.length):
+                self.game_layout.addWidget(self.buttons[i][j],i,j)
 
-    def retranslateUi(self, Window):
-        Window.setWindowTitle(_translate("Window", "MainWindow", None))
-        self.player_1.setText(_translate("Window", "Player 1", None))
-        self.score_1.setText(_translate("Window", "Score 1", None))
-        self.player_2.setText(_translate("Window", "Player 2", None))
-        self.score_2.setText(_translate("Window", "Score 2", None))
-        self.menuOthello.setTitle(_translate("Window", "Game", None))
-        self.menuOptions.setTitle(_translate("Window", "Options", None))
-        self.action_new_game.setText(_translate("Window", "New Game", None))
-        self.action_undo.setText(_translate("Window", "Undo", None))
-        self.action_stats.setText(_translate("Window", "Stats", None))
-		
-        self.__length = 8
-        self.__buttons = [[OthelloCell()
-            for i in range(self.__length)]
-            for j in range(self.__length)]
-        for i in range(self.__length):
-            for j in range(self.__length):
-                self.game_layout.addWidget(self.__buttons[i][j],i,j)
-        Window.connect(self.__buttons[0][0], QtCore.SIGNAL('clicked()'), self.ok)
+        self.window.show()
 
-        Window.connect(self.action_stats, QtCore.SIGNAL('triggered()'), self.menu)
+    def retranslateUi(self):
+        """Affiche les textes de l'interface principale"""
+        self.window.setWindowTitle("Othello")
+        self.player_1.setText("Player 1")
+        self.score_1.setText("Score 1")
+        self.player_2.setText("Player 2")
+        self.score_2.setText("Score 2")
+        self.menuOthello.setTitle("Game")
+        self.menuOptions.setTitle("Options")
+        self.action_new_game.setText("New Game")
+        self.action_undo.setText("Undo")
+        self.action_stats.setText("Stats")
 
-	#### En cours, c'est le bordel a partir d'ici
+    def start(self):
+        """Gère les événements : boutons cliqués, signaux émis"""
+        for i in range(self.length):
+            for j in range(self.length):
+                self.window.connect(self.buttons[i][j], QtCore.SIGNAL('clicked()'), self.cell_clicked(i,j))
+        self.window.connect(self.action_new_game, QtCore.SIGNAL('triggered()'), self.new_game)
+        self.window.connect(self.action_stats, QtCore.SIGNAL('triggered()'), self.stats)
 
-    def menu(self):
-        """Affiche le menu permettant de rentrer les paramètres"""
-        # Création du QWidget central et du QGridLayout, ajout des éléments
-        self.menu_window = QtGui.QMainWindow()
-        central_widget = QtGui.QWidget(self.menu_window)
-        self.menu_window.setCentralWidget(central_widget)
+    def cell_clicked(self,i,j):
+        """Renvoie une fonction permettant de lancer le tour en cas d'activation d'une
+        case valide"""
+        return lambda:self.cell_test(i,j)
+
+    def cell_test(self,i,j):
+        print("Case "+str(i)+","+str(j)+" activee")
+
+    def new_game(self):
+        """Affiche le menu permettant de rentrer les paramètres pour lancer un nouveau jeu"""
+        # Les objets ne sont pas des attributs de la classe car ils n'ont pas
+        # vocation à exister hors de cette fonction
+        self.new_game_window = QtGui.QMainWindow()
+        central_widget = QtGui.QWidget(self.new_game_window)
+        self.new_game_window.setCentralWidget(central_widget)
         layout = QtGui.QGridLayout()
         central_widget.setLayout(layout)
-        player_1_label = QtGui.QLabel("Player 1 :")
+        player_1_label = QtGui.QLabel("Noir :")
         layout.addWidget(player_1_label,0,0)
-        player_2_label = QtGui.QLabel("Player 2 :")
+        player_2_label = QtGui.QLabel("Blanc :")
         layout.addWidget(player_2_label,1,0)
         player_1_name = QtGui.QLineEdit("Joueur 1")
         layout.addWidget(player_1_name,0,1)
@@ -124,48 +143,38 @@ class Ui_Window(object):
         layout.addWidget(player_2_name,1,1)
         AI_box = QtGui.QCheckBox("IA")
         layout.addWidget(AI_box,2,0)
-        depth_label = QtGui.QLabel("Depth :")
-        layout.addWidget(depth_label,3,0)
-        depth_number = QtGui.QLineEdit("0")
-        depth_number.setEnabled(False)
-        layout.addWidget(depth_number,3,1)
-        import_box = QtGui.QCheckBox("Importer")
-        layout.addWidget(import_box,4,0)
-        player_2_label = QtGui.QLabel("Nom de la grille :")
-        layout.addWidget(player_2_label,5,0)
-        grid_name = QtGui.QLineEdit("")
-        grid_name.setEnabled(False)
-        layout.addWidget(grid_name,5,1)
-        player_2_label = QtGui.QLabel("Taille de la grille :")
-        layout.addWidget(player_2_label,6,0)
-        grid_length = QtGui.QLineEdit("7")
-        layout.addWidget(grid_length,6,1)
         start_button = QtGui.QPushButton("Commencer")
-        layout.addWidget(start_button,7,3)
-        # On désactive les cases inutiles en fonction des cases cochées
-        AI_box.stateChanged.connect(lambda:depth_number.setEnabled(AI_box.isChecked()))
-        import_box.stateChanged.connect(lambda:grid_name.setEnabled(import_box.isChecked()))
-        import_box.stateChanged.connect(lambda:grid_length.setEnabled(not import_box.isChecked()))
-        self.menu_window.show()
+        layout.addWidget(start_button,3,3)
+        self.new_game_window.setWindowTitle("New Game")
+        self.new_game_window.show()
         start_button.clicked.connect(self.ok)
         # Mise en place des paramètres avec set_parameters
         #start_button.clicked.connect(lambda:self.set_parameters(
         #	player_1_name.text(),player_2_name.text(),
-        #	import_box.isChecked(),grid_length.text(),grid_name.text(),
-        #	AI_box.isChecked(), depth_number.text()))
+        #	AI_box.isChecked()))
 
-# Fin du bordel
-	
+    def stats(self):
+        """Affiche la fenêtre contenant les statistiques du jeu"""
+        # Les objets ne sont pas des attributs de la classe car ils n'ont pas
+        # vocation à exister hors de cette fonction
+        self.stats_window = QtGui.QMainWindow()
+        central_widget = QtGui.QWidget(self.stats_window)
+        self.stats_window.setCentralWidget(central_widget)
+        layout = QtGui.QGridLayout()
+        central_widget.setLayout(layout)
+        player_1_label = QtGui.QLabel("En construction")
+        layout.addWidget(player_1_label,0,0)
+        exit_button = QtGui.QPushButton("Continuer")
+        layout.addWidget(exit_button,1,1)
+        self.stats_window.setWindowTitle("Statistics")
+        self.stats_window.show()
+        self.stats_window.connect(exit_button, QtCore.SIGNAL('clicked()'), self.ok)
+
     def ok(self):
         print("Ok")
 
-
-if __name__ == "__main__":
-    import sys
-    app = QtGui.QApplication(sys.argv)
-    Window = QtGui.QMainWindow()
-    ui = Ui_Window()
-    ui.setupUi(Window)
-    Window.show()
-    sys.exit(app.exec_())
+import sys
+app = QtGui.QApplication(sys.argv)
+ui = Ui_Window()
+sys.exit(app.exec_())
 

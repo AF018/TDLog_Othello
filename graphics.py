@@ -102,6 +102,60 @@ class Ui_Window(object):
                 self.game_layout.addWidget(self.__buttons[i][j],i,j)
         Window.connect(self.__buttons[0][0], QtCore.SIGNAL('clicked()'), self.ok)
 
+        Window.connect(self.action_stats, QtCore.SIGNAL('triggered()'), self.menu)
+
+	#### En cours, c'est le bordel a partir d'ici
+
+    def menu(self):
+        """Affiche le menu permettant de rentrer les paramètres"""
+        # Création du QWidget central et du QGridLayout, ajout des éléments
+        self.menu_window = QtGui.QMainWindow()
+        central_widget = QtGui.QWidget(self.menu_window)
+        self.menu_window.setCentralWidget(central_widget)
+        layout = QtGui.QGridLayout()
+        central_widget.setLayout(layout)
+        player_1_label = QtGui.QLabel("Player 1 :")
+        layout.addWidget(player_1_label,0,0)
+        player_2_label = QtGui.QLabel("Player 2 :")
+        layout.addWidget(player_2_label,1,0)
+        player_1_name = QtGui.QLineEdit("Joueur 1")
+        layout.addWidget(player_1_name,0,1)
+        player_2_name = QtGui.QLineEdit("Joueur 2")
+        layout.addWidget(player_2_name,1,1)
+        AI_box = QtGui.QCheckBox("IA")
+        layout.addWidget(AI_box,2,0)
+        depth_label = QtGui.QLabel("Depth :")
+        layout.addWidget(depth_label,3,0)
+        depth_number = QtGui.QLineEdit("0")
+        depth_number.setEnabled(False)
+        layout.addWidget(depth_number,3,1)
+        import_box = QtGui.QCheckBox("Importer")
+        layout.addWidget(import_box,4,0)
+        player_2_label = QtGui.QLabel("Nom de la grille :")
+        layout.addWidget(player_2_label,5,0)
+        grid_name = QtGui.QLineEdit("")
+        grid_name.setEnabled(False)
+        layout.addWidget(grid_name,5,1)
+        player_2_label = QtGui.QLabel("Taille de la grille :")
+        layout.addWidget(player_2_label,6,0)
+        grid_length = QtGui.QLineEdit("7")
+        layout.addWidget(grid_length,6,1)
+        start_button = QtGui.QPushButton("Commencer")
+        layout.addWidget(start_button,7,3)
+        # On désactive les cases inutiles en fonction des cases cochées
+        AI_box.stateChanged.connect(lambda:depth_number.setEnabled(AI_box.isChecked()))
+        import_box.stateChanged.connect(lambda:grid_name.setEnabled(import_box.isChecked()))
+        import_box.stateChanged.connect(lambda:grid_length.setEnabled(not import_box.isChecked()))
+        self.menu_window.show()
+        start_button.clicked.connect(self.ok)
+        # Mise en place des paramètres avec set_parameters
+        #start_button.clicked.connect(lambda:self.set_parameters(
+        #	player_1_name.text(),player_2_name.text(),
+        #	import_box.isChecked(),grid_length.text(),grid_name.text(),
+        #	AI_box.isChecked(), depth_number.text()))
+
+# Fin du bordel
+	
     def ok(self):
         print("Ok")
 

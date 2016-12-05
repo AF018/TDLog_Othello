@@ -5,6 +5,7 @@ class OthelloCell(QtGui.QLabel):
         super().__init__()
         self.setFixedSize(60,60)
         self.color = color
+        self.playable = 0
         if (self.color == 1):
             self.setPixmap(QtGui.QPixmap('occ_white_cell.jpg'))
         elif (self.color == -1):
@@ -17,9 +18,9 @@ class OthelloCell(QtGui.QLabel):
         self.emit(QtCore.SIGNAL('clicked()'))
 
     def enterEvent(self,event):
-        if (self.color == 0):
+        if (self.color == 0 and self.playable == 1):
             self.setPixmap(QtGui.QPixmap('occ_cell.jpg'))
 
     def leaveEvent(self,event):
-        if (self.color == 0):
+        if (self.color == 0 and self.playable == 1):
             self.setPixmap(QtGui.QPixmap('cell.jpg'))

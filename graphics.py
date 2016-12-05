@@ -20,11 +20,7 @@ except AttributeError:
 
 class Ui_Window(object):
     def __init__(self):
-        self.game = Game("j","r")
-        self.game.initia2()
-        self.setupUi()
-        self.retranslateUi()
-        self.start()
+        self.new_game()
 
     def setupUi(self):
         """Affiche tous les éléments de l'interface principale"""
@@ -51,11 +47,11 @@ class Ui_Window(object):
         self.player_2 = QtGui.QLabel(self.gridLayoutWidget)
         self.player_2.setAlignment(QtCore.Qt.AlignCenter)
         self.player_2.setObjectName(_fromUtf8("player_2"))
-        self.game_layout.addWidget(self.player_2, 8, 3, 1, 1)
+        self.game_layout.addWidget(self.player_2, 8, 7, 1, 1)
         self.score_2 = QtGui.QLabel(self.gridLayoutWidget)
         self.score_2.setAlignment(QtCore.Qt.AlignCenter)
         self.score_2.setObjectName(_fromUtf8("score_2"))
-        self.game_layout.addWidget(self.score_2, 8, 2, 1, 1)
+        self.game_layout.addWidget(self.score_2, 8, 6, 1, 1)
         self.gridLayoutWidget.raise_()
         self.player_2.raise_()
         self.window.setCentralWidget(self.centralwidget)
@@ -95,10 +91,10 @@ class Ui_Window(object):
     def retranslateUi(self):
         """Affiche les textes de l'interface principale"""
         self.window.setWindowTitle("Othello")
-        self.player_1.setText("Player 1")
-        self.score_1.setText("Score 1")
-        self.player_2.setText("Player 2")
-        self.score_2.setText("Score 2")
+        self.player_1.setText(self.game._player1.read_name())
+        self.score_1.setText(str(0))
+        self.player_2.setText(self.game._player2.read_name())
+        self.score_2.setText(str(0))
         self.menuOthello.setTitle("Game")
         self.menuOptions.setTitle("Options")
         self.action_new_game.setText("New Game")
@@ -109,6 +105,12 @@ class Ui_Window(object):
         """Gère les événements : boutons cliqués, signaux émis"""
         for i in range(self.length):
             for j in range(self.length):
+                # ATTENTION AFFICHAGE coup realisable
+				# Comportement non dynamique, s'utilise uniquement pour le joueur 1
+                if (i,j) in self.game.valid_positions(self.game.number_to_player(0))[1]:
+                    self.buttons[i][j].playable = 1
+                else:
+                    self.buttons[i][j].playable = 0
                 self.window.connect(self.buttons[i][j], QtCore.SIGNAL('clicked()'), self.cell_clicked(i,j))
         self.window.connect(self.action_new_game, QtCore.SIGNAL('triggered()'), self.new_game)
         self.window.connect(self.action_stats, QtCore.SIGNAL('triggered()'), self.stats)
@@ -120,6 +122,14 @@ class Ui_Window(object):
 
     def cell_test(self,i,j):
         print("Case "+str(i)+","+str(j)+" activee")
+
+    def set_parameters(self,player_1_name,player_2_name):
+        self.game = Game(player_1_name,player_2_name)
+        self.game.initia2()
+        self.new_game_window.close()
+        self.setupUi()
+        self.retranslateUi()
+        self.start()
 
     def new_game(self):
         """Affiche le menu permettant de rentrer les paramètres pour lancer un nouveau jeu"""
@@ -144,12 +154,7 @@ class Ui_Window(object):
         layout.addWidget(start_button,3,3)
         self.new_game_window.setWindowTitle("New Game")
         self.new_game_window.show()
-        start_button.clicked.connect(self.ok)
-
-        # Mise en place des paramètres avec set_parameters
-        #start_button.clicked.connect(lambda:self.set_parameters(
-        #	player_1_name.text(),player_2_name.text(),
-        #	AI_box.isChecked()))
+        start_button.clicked.connect(lambda:self.set_parameters(player_1_name.text(),player_2_name.text()))
 
     def stats(self):
         """Affiche la fenêtre contenant les statistiques du jeu"""
@@ -166,10 +171,14 @@ class Ui_Window(object):
         layout.addWidget(exit_button,1,1)
         self.stats_window.setWindowTitle("Statistics")
         self.stats_window.show()
-        self.stats_window.connect(exit_button, QtCore.SIGNAL('clicked()'), self.ok)
+        self.stats_window.connect(exit_button, QtCore.SIGNAL('clicked()'), lambda:self.stats_window.close())
 
     def ok(self):
         print("Ok")
+
+### Jouer les coups
+### Afficher les coups jouables en FONCTION du joueur
+### Permettre la lecture ecriture du fichier de statistiques
 
 import sys
 app = QtGui.QApplication(sys.argv)

@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'window.ui'
-#
-# Created by: PyQt4 UI code generator 4.11.4
-#
-# WARNING! All changes made in this file will be lost!
-
 from PyQt4 import QtCore, QtGui
 from utils import OthelloCell
+from game_pas_nettoye import Game
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -25,6 +20,8 @@ except AttributeError:
 
 class Ui_Window(object):
     def __init__(self):
+        self.game = Game("j","r")
+        self.game.initia2()
         self.setupUi()
         self.retranslateUi()
         self.start()
@@ -86,7 +83,7 @@ class Ui_Window(object):
         self.menubar.addAction(self.menuOptions.menuAction())
 
         self.length = 8
-        self.buttons = [[OthelloCell()
+        self.buttons = [[OthelloCell(self.game.grid.read_element(i,j))
             for i in range(self.length)]
             for j in range(self.length)]
         for i in range(self.length):
@@ -148,6 +145,7 @@ class Ui_Window(object):
         self.new_game_window.setWindowTitle("New Game")
         self.new_game_window.show()
         start_button.clicked.connect(self.ok)
+
         # Mise en place des paramètres avec set_parameters
         #start_button.clicked.connect(lambda:self.set_parameters(
         #	player_1_name.text(),player_2_name.text(),

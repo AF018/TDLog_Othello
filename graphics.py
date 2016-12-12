@@ -2,7 +2,8 @@
 
 from PyQt4 import QtCore, QtGui
 from utils import OthelloCell
-from game_pas_nettoye import Game
+import tools
+from tools_game import Game
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -91,9 +92,9 @@ class Ui_Window(object):
     def retranslateUi(self):
         """Affiche les textes de l'interface principale"""
         self.window.setWindowTitle("Othello")
-        self.player_1.setText(self.game._player1.read_name())
+        self.player_1.setText(self.game.player1.read_name())
         self.score_1.setText(str(0))
-        self.player_2.setText(self.game._player2.read_name())
+        self.player_2.setText(self.game.player2.read_name())
         self.score_2.setText(str(0))
         self.menuOthello.setTitle("Game")
         self.menuOptions.setTitle("Options")
@@ -103,11 +104,11 @@ class Ui_Window(object):
 
     def start(self):
         """Gère les événements : boutons cliqués, signaux émis"""
+        print("pet")
+        playable_pos = self.game.valid_positions(self.game.current_player)[1]
         for i in range(self.length):
             for j in range(self.length):
-                # ATTENTION AFFICHAGE coup realisable
-				# Comportement non dynamique, s'utilise uniquement pour le joueur 1
-                if (i,j) in self.game.valid_positions(self.game.number_to_player(0))[1]:
+                if (i,j) in playable_pos:
                     self.buttons[i][j].playable = 1
                 else:
                     self.buttons[i][j].playable = 0
@@ -118,14 +119,39 @@ class Ui_Window(object):
     def cell_clicked(self,i,j):
         """Renvoie une fonction permettant de lancer le tour en cas d'activation d'une
         case valide"""
-        return lambda:self.cell_test(i,j)
+        return lambda:self.play_this(i,j)
+
+    def play_this(self,i,j):
+        """Lance un tour,actualise l'interface graphique et la classe Game"""
+        if self.buttons[i][j].playable==1:
+            # Calcul des positions des pions qui vont être "en bout de ligne" pour les retournements
+            origins=self.game.origins(i,j,self.game.current_player)
+            # Commande permettant de jouer le mouvement proposé
+            self.game.play_one_shot(i,j,self.game.current_player)
+            # Effectue tous les retournements engendrés par le coup
+            self.game.turn_pawn(i,j,self.game.current_player,*origins)
+            print(" ")
+            self.game.display()
+            for k in range(self.length):
+                for l in range(self.length):
+                    self.buttons[k][l].refresh_color(self.game.grid.read_element(k,l))
+            print("PROUT")
+            if len(self.game.valid_positions(self.game.current_player)[1])>0:
+                self.game.current_player=self.game.opponent(self.game.current_player)
+            print("REPROUT")
+			# BLA BLA BLA
+			# LIRE LIRE.txt
+        #self.start()
+
+        #PROBLEME LA LISTE N4EST PAS ACTUALIS2E IL FAUT L4ACTUALISER
+		#PAREIL PLATEAU §§§§§§§§§§§§§§§§§§§§§§§
+        return
 
     def cell_test(self,i,j):
         print("Case "+str(i)+","+str(j)+" activee")
 
     def set_parameters(self,player_1_name,player_2_name):
         self.game = Game(player_1_name,player_2_name)
-        self.game.initia2()
         self.new_game_window.close()
         self.setupUi()
         self.retranslateUi()
@@ -176,8 +202,6 @@ class Ui_Window(object):
     def ok(self):
         print("Ok")
 
-### Jouer les coups
-### Afficher les coups jouables en FONCTION du joueur
 ### Permettre la lecture ecriture du fichier de statistiques
 
 import sys

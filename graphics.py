@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from PyQt4 import QtCore, QtGui
-from csv import reader
+from csv import reader,writer
 from utils import OthelloCell
 import tools
 from tools_game import Game
@@ -24,9 +24,10 @@ class Ui_Window(object):
     def __init__(self):
         """Récupère les statistiques pour pouvoir les modifier et lance un nouveau jeu"""
         # Statistiques dans un fichier csv, lecture de chaque ligne du document pour récupérer
-        with open("stats.csv", newline = '') as text:
+        with open("stats.csv", newline = '\n') as text:
             content = reader(text, delimiter = ',')
             self.stats_tab=[[int(number) for number in line] for line in content]
+        print(self.stats_tab)
         self.new_game()
 
     def setupUi(self):
@@ -166,15 +167,22 @@ class Ui_Window(object):
                 for l in range(self.length):
                     self.buttons[k][l].refresh(self.game.grid.read_element(k,l),(k,l) in playable_pos)
             if self.game.end_game():
-                self.information_1_label.setText("Gagnant :")
-                self.information_2_label.setText("")
-                #créer une fonction pour afficher la fin de partie
-                #faire quelque chose pour la fin du jeu : affichage des stats ou je sais pas quoi 
+                self.finish_game()
                 #probleme sur certaines cases au relancement d'une partie
 				#checker le vainqueur a la fin du jeu
-				#mettre a jour les statistiques une fois la partie finie en ecrasant le fichier
                 #reorganiser les fonctions et autres pour plus de lisibilité
         return
+
+    def finish_game(self):
+        self.information_1_label.setText("Gagnant :")
+        self.information_2_label.setText("")
+        # Mise a jour des statistiques
+        self.stats_tab[0][0]+=1
+        self.stats_tab[0][1]+=1
+        with open("stats.csv", 'w') as text:
+            content = writer(text)
+            content.writerows([[str(number) for number in line] for line in self.stats_tab])
+        self.stats()
 
     def cell_test(self,i,j):
         print("Case "+str(i)+","+str(j)+" activee")
@@ -222,16 +230,20 @@ class Ui_Window(object):
         self.stats_window.setCentralWidget(central_widget)
         layout = QtGui.QGridLayout()
         central_widget.setLayout(layout)
-        game_nb_label = QtGui.QLabel("Nombre de parties sans IA :")
-        layout.addWidget(game_nb_label,0,0)
-        game_nb = QtGui.QLabel(str(self.stats_tab[0][0]))
-        layout.addWidget(game_nb,0,1)
-        AI_game_nb_label = QtGui.QLabel("Nombre de parties avec IA :")
-        layout.addWidget(AI_game_nb_label,1,0)
-        AI_game_nb = QtGui.QLabel(str(self.stats_tab[1][0]))
-        layout.addWidget(AI_game_nb,1,1)
+        games_label = QtGui.QLabel("Nombre de parties :")
+        layout.addWidget(games_label,0,0)
+        games = QtGui.QLabel(str(self.stats_tab[0][0]))
+        layout.addWidget(games,0,1)
+        not_AI_games_label = QtGui.QLabel("Nombre de parties sans IA :")
+        layout.addWidget(not_AI_games_label,1,0)
+        not_AI_games = QtGui.QLabel(str(self.stats_tab[0][1]))
+        layout.addWidget(not_AI_games,1,1)
+        AI_games_label = QtGui.QLabel("Nombre de parties avec IA :")
+        layout.addWidget(AI_games_label,2,0)
+        AI_games = QtGui.QLabel(str(self.stats_tab[0][2]))
+        layout.addWidget(AI_games,2,1)
         exit_button = QtGui.QPushButton("Continuer")
-        layout.addWidget(exit_button,2,2)
+        layout.addWidget(exit_button,3,2)
         self.stats_window.setWindowTitle("Statistics")
         self.stats_window.show()
         self.stats_window.connect(exit_button, QtCore.SIGNAL('clicked()'), lambda:self.stats_window.close())

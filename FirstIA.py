@@ -1,4 +1,4 @@
-
+#coding: utf8
 
 #Premiere version de l'IA : un minimax couple a un alpha-beta
 #Principe rappele ici : l'algorithme minimax explore tous les coups possibles a partir
@@ -23,6 +23,7 @@
 
 #NB : d'une maniere generale, les optimisations de minimax ont le meme but : eviter d'explorer certains chemins
 
+import tools_game
 
 """
 Pseudo code : 
@@ -62,20 +63,21 @@ def IA_play(self,(x,y),IAs_turn,depth,player) :
         #On indique qu'on simule le coup en val_pos[i]
         #Si c'est au tour de l'IA : on sélectionne le max
         if (IAs_turn) :    
-            play_one_shot(val_pos[1][i][0],val_pos[1][i][1],IA)    #NB : play_one_shot pas efficace dans ce contexte, à changer !
+            play_one_shot(val_pos[1][i][0],val_pos[1][i][1],IA)    
+            #NB : play_one_shot : pas beau
             val_move = IA_play(val_pos[i],1-IAs_turn,depth-1,player)
-                if (val_maxi<=val_move) : 
-                    val_maxi=val_move
-                    (xnext,ynext)=val_pos[1][i]
+            if (val_maxi<=val_move) : 
+                val_maxi=val_move
+                (xnext,ynext)=val_pos[1][i]
             #On retire le pion
             self.grid.write_element(val_pos[1][i][0],val_pos[1][i][1],0)
         #Sinon : le min
         else : 
             play_one_shot2(val_pos[1][i][0],val_pos[1][i][1],player)    #NB : Accès au nom du joueur ? Tableau de joueurs ?
             val_move = IA_play(val_pos[i],1-IAs_turn,depth-1,player)
-                if (val_mini>=val_move) : 
-                    val_maxi=val_move
-                    (xnext,ynext)=val_pos[1][i]
+            if (val_mini>=val_move) : 
+                val_maxi=val_move
+                (xnext,ynext)=val_pos[1][i]
             #On retire le pion
             self.grid.write_element(val_pos[1][i][0],val_pos[1][i][1],0)
     #En sortie de boucle, (xnext,ynext) contient le coup conduisant au meilleur résultat

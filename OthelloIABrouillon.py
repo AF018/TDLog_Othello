@@ -196,7 +196,7 @@ class Game:
     def IA_play(self,val_pos,IAs_turn,depth,player) :
         if (depth==0) : 
             return 0
-#        val_pos = self.valid_positions(IA)
+#        val_pos = self.valid_positions(self.IA)
         val_maxi=-1e5
         val_mini=1e5
         if (len(val_pos)==0) :
@@ -207,9 +207,9 @@ class Game:
         #Si c'est au tour de l'IA : on sélectionne le max
             (xpawn,ypawn)=val_pos[1][i]
             if (IAs_turn) :
-                origins=self.origins(xpawn,ypawn,IA)
-                self.play_one_shot(xpawn,ypawn,IA)
-                self.turn_pawn(xpawn,ypawn,IA,*origins)
+                origins=self.origins(xpawn,ypawn,self.IA)
+                self.play_one_shot(xpawn,ypawn,self.IA)
+                self.turn_pawn(xpawn,ypawn,self.IA,*origins)
                 #NB : play_one_shot : pas beau
                 val_move = IA_play(self.valid_positions(player),1-IAs_turn,depth-1,player)
                 if (val_maxi<=val_move) :
@@ -223,13 +223,13 @@ class Game:
                 origins=self.origins(xpawn,ypawn,player)
                 self.play_one_shot(xpawn,ypawn,player)    #NB : Accès au nom du joueur ? Tablea
                 self.turn_pawn(xpawn,ypawn,player,*origins)
-                val_move = IA_play(self.valid_positions(IA),1-IAs_turn,depth-1,player)
+                val_move = IA_play(self.valid_positions(self.IA),1-IAs_turn,depth-1,player)
                 if (val_mini>=val_move) :
                     val_mini=val_move
                     (xnext,ynext)=(xpawn,ypawn)
                 #On retire le pion
                 self.grid.write_element(xpawn,ypawn,0)
-                self.turn_pawn(xpawn,ypawn,IA,*origins)
+                self.turn_pawn(xpawn,ypawn,self.IA,*origins)
     #En sortie de boucle, (xnext,ynext) contient le coup conduisant au meilleur résultat
     #Notons que l'IA (ou le joueur) peut se retrouver dans une situation où passer son tour est la meilleure $
     #=> à rajouter !!! Pour l'instant, on suppose qu'on ne passe pas son tour
@@ -239,3 +239,23 @@ class Game:
         play_one_shot(xnext,yxnext,IA)
         score+=self.IA.read_score()-self.player2.read_score()
         return score
+
+
+#Pour intégrer l'IA au code dans son ensemble : 
+#lancer du jeu => souhaitez-vous une partie à deux joueurs ou contre l'IA => booléen IA
+#si IA : quelle couleur désirez-vous, + quel nom ? (double input)
+#et dans init : self.player1 = player(nom, couleurdonnée)
+#self.IA = player("IA",-1*couleurdonnée)
+#
+#sinon : habituel (double requête de nom)
+#init game : ce qui est déjà là
+#
+#=> du coup, IA est bien un attribut de game, c'est en réalité un player
+#
+#Dans le jeu lui même : 
+#il suffit par exemple de faire un test à chaque tour : si le joueur courrant est l'IA,
+#au lieu de faire des inputs, on lance game.IA(self.valid_positions(game.IA),1,depthinitial,game.player1)
+#
+#
+#
+#

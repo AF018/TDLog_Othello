@@ -194,7 +194,8 @@ class Game:
 
 #val_pos = self.valid_positions(IA)
     def IA_play(self,val_pos,IAs_turn,depth,player) :
-        if (depth==0) : 
+        if (depth==0) :
+            print "On dépile !!!" 
             return 0
 #        val_pos = self.valid_positions(self.IA)
         val_maxi=-1e5
@@ -216,7 +217,10 @@ class Game:
                     val_maxi=val_move
                     (xnext,ynext)=(xpawn,ypawn)
             #On retire le pion
-                self.grid.write_element(xpawn,ypawn,0)
+                print"$$$$^$^"é$'^é$"'^é$^"'é^'"
+                self.grid[xpawn][ypawn]=0
+                print "Sin"
+    #            self.grid.write_element(xpawn,ypawn,0)
                 self.turn_pawn(xpawn,ypawn,player,*origins)
         #Sinon : le min
             else :
@@ -228,7 +232,10 @@ class Game:
                     val_mini=val_move
                     (xnext,ynext)=(xpawn,ypawn)
                 #On retire le pion
-                self.grid.write_element(xpawn,ypawn,0)
+                print "ùùùùùùùù"
+                self.grid[xpawn][ypawn]=0
+                print "Town"
+#                self.grid.write_element(xpawn,ypawn,0)
                 self.turn_pawn(xpawn,ypawn,self.IA,*origins)
     #En sortie de boucle, (xnext,ynext) contient le coup conduisant au meilleur résultat
     #Notons que l'IA (ou le joueur) peut se retrouver dans une situation où passer son tour est la meilleure $

@@ -43,6 +43,11 @@ class Grid:
         except tools.ErrorValue: #traitement si la valeur qu'on veut rentrer ne vaut ni 1 ni -1
             print ("impossible de rentrer cette valeur...")
             
+    def empty_grid(self): #met la grille à zero sans en recréer une nouvelle
+        for i in range(self._size):
+            for j in range(self._size):
+                self.grid[i][j]=0
+                
     
     #Méthode qui renvoie Vrai si la cellule est vide ie non occupée
     def empty_cell(self,i,j):

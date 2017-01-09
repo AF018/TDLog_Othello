@@ -56,6 +56,7 @@ class Game:
         
     def play_one_shot(self,i,j,player):
         player.occupy_position(i,j)
+        print("ok")
         self.grid.write_element(i,j,player.read_value())
     
     def replacement(self,i,j,current_player):
@@ -195,5 +196,19 @@ class Game:
             return(self.player2.read_name())
         else:
             return("No one wins...")
-
+    
+    # Réinitialisation du jeu
+    def empty_game(self):
+        #Initialisation des positions occupées par les joueurs
+        for p in [self.player1,self.player2]:
+            while p.read_positions()!=[]:
+                i,j=p.read_positions()[0]
+                p.no_more_occupy_position(i,j)
+        #Initilisation de la grille
+        self.grid.empty_grid()
+        self.play_one_shot(3,3,self.player2)  
+        self.play_one_shot(4,4,self.player2)
+        self.play_one_shot(3,4,self.player1)
+        self.play_one_shot(4,3,self.player1) 
+        
                 

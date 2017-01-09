@@ -41,7 +41,7 @@ while not game.end_game():
             position_tested_i=int(input('Entrez la position desiree:i:'))
             position_tested_j=int(input('Entrez la position desiree:j:'))
         else : 
-            game.IA_play(game.valid_positions(game.player2),1,5,5,game.player1)
+            game.IA_play(game.valid_positions(game.player2),1,3,3,game.player1)
            
         try:
             if (pvp or game.current_player.read_name()<>"IA") : 

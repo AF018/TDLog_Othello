@@ -17,9 +17,10 @@ import tools_player
 class Game:
     
     #Initialisation
-    def __init__(self, name1, name2,pvp,color):
+    def __init__(self, name1, name2, pvp_option, color):
         self.grid=tools_grid.Grid()
-        if (pvp) : 
+        self.pvp = pvp_option
+        if (self.pvp) : 
             self.player1=tools_player.Player(name1, -1)  #Noirs, -1       
             self.player2=tools_player.Player(name2, 1)   #Blancs, 1 
             self.current_player=self.player1
@@ -201,7 +202,7 @@ class Game:
     def winner (self):
         score_player1=self.player1.read_score() 
         score_player2=self.player2.read_score()
-        print " scores : {0} {1}".format(score_player1,score_player2)
+        print(" scores : {0} {1}".format(score_player1,score_player2))
         if score_player1>score_player2:
             return(self.player1.read_name())
         elif score_player2>score_player1:
@@ -227,8 +228,8 @@ class Game:
                 
 
 
-                
-    def IA_play(self,val_pos,IAs_turn,depth,depth0,player) : 
+#NBNBNB : val_pos = valid_positions[1]                
+    def IA_play(self,val_pos,IAs_turn,depth,depth0,player,AI_pos) : 
 #        print "IA begins {0} {1}".format(val_pos[1][0][0],val_pos[1][0][1])
 #        origins=self.origins(val_pos[1][0][0],val_pos[1][0][1],self.player2)
 #        self.play_one_shot(val_pos[1][0][0],val_pos[1][0][1],self.player2)
@@ -245,10 +246,10 @@ class Game:
             return 0
    #     print "depth≠0 : on contine"
         #On explore chaque coup possible pour l'IA.
-        for i in range (len(val_pos[1])) :
+        for i in range (len(val_pos)) :
         #On indique qu'on simule le coup en val_pos[i]
         #Si c'est au tour de l'IA : on sélectionne le max
-            (xpawn,ypawn)=val_pos[1][i]
+            (xpawn,ypawn)=val_pos[i]
             if (IAs_turn) :
     #            print "IAsturn : play_one_shot en {0},{1}".format(xpawn,ypawn)
                 origins=self.origins(xpawn,ypawn,self.IA)
@@ -258,9 +259,9 @@ class Game:
     #            print "pion tourné ; appel à depth-1={0}".format(depth-1)
                 #NB : play_one_shot : pas beau
     #            print "test : ",player.read_positions()
-                l = self.valid_positions(player)
+                l = self.valid_positions(player)[1]
     #            print "l : fait"
-                val_move = self.IA_play(l,1-IAs_turn,depth-1,depth0,player)
+                val_move = self.IA_play(l,1-IAs_turn,depth-1,depth0,player,AI_pos)
     #            print "fin appel récursif, on revient à depth = {0}".format(depth)
                 if (val_maxi<=val_move) :
                     val_maxi=val_move
@@ -278,7 +279,7 @@ class Game:
                 self.play_one_shot(xpawn,ypawn,player)    #NB : Accès au nom du joueur ? Tablea
      #           print "coup joué"
                 self.turn_pawn(xpawn,ypawn,player,*origins)
-                val_move = self.IA_play(self.valid_positions(self.IA),1-IAs_turn,depth-1,depth0,player)
+                val_move = self.IA_play(self.valid_positions(self.IA)[1],1-IAs_turn,depth-1,depth0,player,AI_pos)
                 if (val_mini>=val_move) :
                     val_mini=val_move
                     (xnext,ynext)=(xpawn,ypawn)
@@ -295,9 +296,10 @@ class Game:
 
         score=-1*self.IA.read_score() + self.player2.read_score()
         if (depth==depth0) :
-            origins=self.origins(xnext,ynext,self.IA)
-            self.play_one_shot(xnext,ynext,self.IA)
-            self.turn_pawn(xnext,ynext,self.IA,*origins)
+            AI_pos[0],AI_pos[1]=xnext,ynext
+#            origins=self.origins(xnext,ynext,self.IA)
+#            self.play_one_shot(xnext,ynext,self.IA)
+#            self.turn_pawn(xnext,ynext,self.IA,*origins)
         score+=self.IA.read_score()-self.player2.read_score()
     #    print "ù`ù$^$ù`ù$^$ù`ù$^$ù`^$`ù^!!!!!!!!!! ATTENTION : 6,7 = {0}".format(self.grid.read_element(6,7))
         return score

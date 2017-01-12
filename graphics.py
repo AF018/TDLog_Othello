@@ -27,7 +27,6 @@ class Ui_Window(object):
         with open("stats.csv", newline = '\n') as text:
             content = reader(text, delimiter = ',')
             self.stats_tab=[[int(number) for number in line] for line in content]
-        print(self.stats_tab)
         self.new_game()
 
     def setupUi(self):
@@ -152,16 +151,38 @@ class Ui_Window(object):
             origins=self.game.origins(i,j,self.game.current_player)
             # Commande permettant de jouer le mouvement proposé
             self.game.play_one_shot(i,j,self.game.current_player)
+            print("etape 1")
             # Effectue tous les retournements de pion engendrés par le coup
             self.game.turn_pawn(i,j,self.game.current_player,*origins)
+            print("etape 2")
 			# Changement de joueur
             self.game.current_player=self.game.opponent(self.game.current_player)
 			# Calcul de toutes les positions jouables dans playable_pos
+            print("etape 2.5")
             playable_pos = self.game.valid_positions(self.game.current_player)[1]
+            print("etape 3")
             if len(playable_pos)==0:
                 # Changement de joueur si celui dont c'est le tour n'a pas de position admissible
                 self.game.current_player=self.game.opponent(self.game.current_player)
                 playable_pos = self.game.valid_positions(self.game.current_player)[1]
+            elif not(self.game.pvp):
+                AI_pos=[0,0]
+                self.game.IA_play(playable_pos,1,3,3,self.game.opponent(self.game.current_player),AI_pos)
+                print("etape 4")
+                # Calcul des positions des pions qui vont être "en bout de ligne" pour les retournements
+                origins=self.game.origins(AI_pos[0],AI_pos[1],self.game.current_player)
+                # Commande permettant de jouer le mouvement proposé
+                self.game.play_one_shot(AI_pos[0],AI_pos[1],self.game.current_player)
+                # Effectue tous les retournements de pion engendrés par le coup
+                self.game.turn_pawn(AI_pos[0],AI_pos[1],self.game.current_player,*origins)
+                # Changement de joueur
+                self.game.current_player=self.game.opponent(self.game.current_player)
+                # Calcul de toutes les positions jouables dans playable_pos
+                playable_pos = self.game.valid_positions(self.game.current_player)[1]
+                if len(playable_pos)==0:
+                    # Changement de joueur si celui dont c'est le tour n'a pas de position admissible
+                    self.game.current_player=self.game.opponent(self.game.current_player)
+                    playable_pos = self.game.valid_positions(self.game.current_player)[1]
             self.information_2_label.setText(self.game.current_player.read_name())
             self.score_1.setText(str(self.game.player1.read_score()))
             self.score_2.setText(str(self.game.player2.read_score()))
@@ -191,8 +212,8 @@ class Ui_Window(object):
     def cell_test(self,i,j):
         print("Case "+str(i)+","+str(j)+" activee")
 
-    def set_parameters(self,player_1_name,player_2_name):
-        self.game = Game(player_1_name,player_2_name)
+    def set_parameters(self,player_1_name,player_2_name,pvp_option):
+        self.game = Game(player_1_name,player_2_name,pvp_option,-1)
         self.new_game_window.close()
         self.setupUi()
         self.retranslateUi()
@@ -222,7 +243,7 @@ class Ui_Window(object):
         layout.addWidget(start_button,3,3)
         self.new_game_window.setWindowTitle("Nouvelle partie")
         self.new_game_window.show()
-        start_button.clicked.connect(lambda:self.set_parameters(player_1_name.text(),player_2_name.text()))
+        start_button.clicked.connect(lambda:self.set_parameters(player_1_name.text(),player_2_name.text(),not(AI_box.checkState())))
 
     def stats(self):
         """Affiche la fenêtre contenant les statistiques du jeu"""

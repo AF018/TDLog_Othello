@@ -42,9 +42,7 @@ class Player:
     #Ajoute une position à la liste des positions occupées par le joueur
     def occupy_position(self,i,j):
         try:
-            print("entre")
             self.used_positions.append((i,j)) #On ajoute la position à la liste des positions occupées 
-            print("sortie")
 
             
         except tools.ErrorIndex: #Tritement de l'exception

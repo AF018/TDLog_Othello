@@ -141,10 +141,12 @@ class Ui_Window(object):
     def cell_clicked(self,i,j):
         """Renvoie une fonction permettant de lancer le tour en cas d'activation d'une
         case valide"""
+        print("premier appel")
         return lambda:self.play_this(i,j)
 
     def play_this(self,i,j):
         """Lance un tour,actualise l'interface graphique et la classe Game"""
+        print("entendu")
         if self.buttons[i][j].playable==1:
             # Calcul des positions des pions qui vont être "en bout de ligne" pour les retournements
             origins=self.game.origins(i,j,self.game.current_player)
@@ -171,6 +173,8 @@ class Ui_Window(object):
                 #probleme sur certaines cases au relancement d'une partie
 				#checker le vainqueur a la fin du jeu
                 #reorganiser les fonctions et autres pour plus de lisibilité
+                #le probleme est dependant deterministiquement des positions précédentes
+        self.game.display()
         return
 
     def finish_game(self):

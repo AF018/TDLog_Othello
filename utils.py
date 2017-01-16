@@ -22,6 +22,8 @@ class OthelloCell(QtGui.QLabel):
             self.setPixmap(QtGui.QPixmap('occ_white_cell.jpg'))
         elif (self.color_nb == -1):
             self.setPixmap(QtGui.QPixmap('occ_black_cell.jpg'))
+        else:
+            self.setPixmap(QtGui.QPixmap('cell.jpg'))
         if is_playable:
             self.playable = 1
         else:

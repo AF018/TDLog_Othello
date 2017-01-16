@@ -19,17 +19,50 @@ try:
 except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
-
-class Ui_Window(object):
+   
+class Othello_Window():
     def __init__(self):
-        """Récupère les statistiques pour pouvoir les modifier et lance un nouveau jeu"""
+        """Récupère les statistiques pour pouvoir les modifier et lance une partie"""
         # Statistiques dans un fichier csv, lecture de chaque ligne du document pour récupérer
         with open("stats.csv", newline = '\n') as text:
             content = reader(text, delimiter = ',')
             self.stats_tab=[[int(number) for number in line] for line in content]
         self.new_game()
 
-    def setupUi(self):
+    def new_game(self):
+        """Affiche le menu permettant de rentrer les paramètres pour lancer un nouveau jeu"""
+        # Les objets ne sont pas des attributs de la classe car ils n'ont pas
+        # vocation à exister hors de cette fonction
+        self.new_game_window = QtGui.QMainWindow()
+        self.new_game_window.setStyleSheet("QMainWindow {background: 'darkgrey';}")
+        central_widget = QtGui.QWidget(self.new_game_window)
+        self.new_game_window.setCentralWidget(central_widget)
+        layout = QtGui.QGridLayout()
+        central_widget.setLayout(layout)
+        player_1_label = QtGui.QLabel("Noir :")
+        layout.addWidget(player_1_label,0,0)
+        player_2_label = QtGui.QLabel("Blanc :")
+        layout.addWidget(player_2_label,1,0)
+        player_1_name = QtGui.QLineEdit("Joueur 1")
+        layout.addWidget(player_1_name,0,1)
+        player_2_name = QtGui.QLineEdit("Joueur 2")
+        layout.addWidget(player_2_name,1,1)
+        AI_box = QtGui.QCheckBox("IA")
+        layout.addWidget(AI_box,2,0)
+        start_button = QtGui.QPushButton("Commencer")
+        layout.addWidget(start_button,3,3)
+        self.new_game_window.setWindowTitle("Nouvelle partie")
+        self.new_game_window.show()
+        start_button.clicked.connect(lambda:self.set_parameters(player_1_name.text(),player_2_name.text(),not(AI_box.checkState())))
+
+    def set_parameters(self,player_1_name,player_2_name,pvp_option):
+        """Crée le jeu puis l'affiche"""
+        self.game = Game(player_1_name,player_2_name,pvp_option,-1)
+        self.new_game_window.close()
+        self.setup_window()
+        self.setup_connections()
+
+    def setup_window(self):
         """Affiche tous les éléments de l'interface principale"""
 		# Création de tous les éléments de la fenêtre
         self.window = QtGui.QMainWindow()
@@ -101,11 +134,7 @@ class Ui_Window(object):
         for i in range(self.length):
             for j in range(self.length):
                 self.game_layout.addWidget(self.buttons[i][j],i,j)
-        # Affichage de la fenêtre de jeu
-        self.window.show()
-
-    def retranslateUi(self):
-        """Affiche les textes de l'interface principale"""
+        # Affichage des textes et couleurs de fond
         self.window.setStyleSheet("QMainWindow {background: 'darkgrey';}")
         self.window.setWindowTitle("Othello")
         self.player_1.setStyleSheet("QLabel { color : black; }")
@@ -120,83 +149,77 @@ class Ui_Window(object):
         self.information_2_label.setText(self.game.player1.read_name())
         self.menuOthello.setTitle("Game")
         self.menuOptions.setTitle("Options")
-        self.action_new_game.setText("New Game")
+        self.action_new_game.setText("Restart")
         self.action_undo.setText("Undo")
         self.action_stats.setText("Stats")
-
-    def start(self):
-        """Gère les événements : boutons cliqués, signaux émis"""
-        playable_pos = self.game.valid_positions(self.game.current_player)[1]
+        # Initialisation des positions jouables
+        self.playable_pos = self.game.valid_positions(self.game.current_player)[1]
         for i in range(self.length):
             for j in range(self.length):
-                if (i,j) in playable_pos:
+                if (i,j) in self.playable_pos:
                     self.buttons[i][j].playable = 1
                 else:
                     self.buttons[i][j].playable = 0
+        # Affichage de la fenêtre de jeu
+        self.window.show()
+
+    def setup_connections(self):
+        """Gère les événements : boutons cliqués, signaux émis"""
+        for i in range(self.length):
+            for j in range(self.length):
                 self.window.connect(self.buttons[i][j], QtCore.SIGNAL('clicked()'), self.cell_clicked(i,j))
-        self.window.connect(self.action_new_game, QtCore.SIGNAL('triggered()'), self.new_game)
+        self.window.connect(self.action_new_game, QtCore.SIGNAL('triggered()'), self.restart)
         self.window.connect(self.action_stats, QtCore.SIGNAL('triggered()'), self.stats)
 
     def cell_clicked(self,i,j):
         """Renvoie une fonction permettant de lancer le tour en cas d'activation d'une
         case valide"""
-        print("premier appel")
         return lambda:self.play_this(i,j)
 
     def play_this(self,i,j):
-        """Lance un tour,actualise l'interface graphique et la classe Game"""
-        print("entendu")
+        """Lance un tour,actualise l'interface graphique et la classe Game, joue un coup
+        avec l'intelligence artificielle si le joueur a sélectionné cette option au départ"""
         if self.buttons[i][j].playable==1:
-            # Calcul des positions des pions qui vont être "en bout de ligne" pour les retournements
-            origins=self.game.origins(i,j,self.game.current_player)
-            # Commande permettant de jouer le mouvement proposé
-            self.game.play_one_shot(i,j,self.game.current_player)
-            print("etape 1")
-            # Effectue tous les retournements de pion engendrés par le coup
-            self.game.turn_pawn(i,j,self.game.current_player,*origins)
-            print("etape 2")
-			# Changement de joueur
-            self.game.current_player=self.game.opponent(self.game.current_player)
-			# Calcul de toutes les positions jouables dans playable_pos
-            print("etape 2.5")
-            playable_pos = self.game.valid_positions(self.game.current_player)[1]
-            print("etape 3")
-            if len(playable_pos)==0:
+            self.apply_move(i,j)
+			# Calcul de toutes les positions jouables dans self.playable_pos
+            self.playable_pos = self.game.valid_positions(self.game.current_player)[1]
+            if len(self.playable_pos)==0:
                 # Changement de joueur si celui dont c'est le tour n'a pas de position admissible
                 self.game.current_player=self.game.opponent(self.game.current_player)
-                playable_pos = self.game.valid_positions(self.game.current_player)[1]
+                self.playable_pos = self.game.valid_positions(self.game.current_player)[1]
             elif not(self.game.pvp):
                 AI_pos=[0,0]
-                self.game.IA_play(playable_pos,1,3,3,self.game.opponent(self.game.current_player),AI_pos)
-                print("etape 4")
-                # Calcul des positions des pions qui vont être "en bout de ligne" pour les retournements
-                origins=self.game.origins(AI_pos[0],AI_pos[1],self.game.current_player)
-                # Commande permettant de jouer le mouvement proposé
-                self.game.play_one_shot(AI_pos[0],AI_pos[1],self.game.current_player)
-                # Effectue tous les retournements de pion engendrés par le coup
-                self.game.turn_pawn(AI_pos[0],AI_pos[1],self.game.current_player,*origins)
-                # Changement de joueur
-                self.game.current_player=self.game.opponent(self.game.current_player)
-                # Calcul de toutes les positions jouables dans playable_pos
-                playable_pos = self.game.valid_positions(self.game.current_player)[1]
-                if len(playable_pos)==0:
+                self.game.IA_play(self.playable_pos,1,3,3,self.game.opponent(self.game.current_player),AI_pos)
+                self.apply_move(AI_pos[0],AI_pos[1])
+                # Calcul de toutes les positions jouables dans self.playable_pos
+                self.playable_pos = self.game.valid_positions(self.game.current_player)[1]
+                if len(self.playable_pos)==0:
                     # Changement de joueur si celui dont c'est le tour n'a pas de position admissible
                     self.game.current_player=self.game.opponent(self.game.current_player)
-                    playable_pos = self.game.valid_positions(self.game.current_player)[1]
-            self.information_2_label.setText(self.game.current_player.read_name())
-            self.score_1.setText(str(self.game.player1.read_score()))
-            self.score_2.setText(str(self.game.player2.read_score()))
-            for k in range(self.length):
-                for l in range(self.length):
-                    self.buttons[k][l].refresh(self.game.grid.read_element(k,l),(k,l) in playable_pos)
+                    self.playable_pos = self.game.valid_positions(self.game.current_player)[1]
+            self.refresh_display()
             if self.game.end_game():
                 self.finish_game()
-                #probleme sur certaines cases au relancement d'une partie
-				#checker le vainqueur a la fin du jeu
-                #reorganiser les fonctions et autres pour plus de lisibilité
-                #le probleme est dependant deterministiquement des positions précédentes
         self.game.display()
         return
+
+    def apply_move(self,i,j):
+        # Calcul des positions des pions qui vont être "en bout de ligne" pour les retournements
+        origins=self.game.origins(i,j,self.game.current_player)
+        # Commande permettant de jouer le mouvement proposé
+        self.game.play_one_shot(i,j,self.game.current_player)
+        # Effectue tous les retournements de pion engendrés par le coup
+        self.game.turn_pawn(i,j,self.game.current_player,*origins)
+		# Changement de joueur
+        self.game.current_player=self.game.opponent(self.game.current_player)
+
+    def refresh_display(self):
+        self.information_2_label.setText(self.game.current_player.read_name())
+        self.score_1.setText(str(self.game.player1.read_score()))
+        self.score_2.setText(str(self.game.player2.read_score()))
+        for k in range(self.length):
+            for l in range(self.length):
+                self.buttons[k][l].refresh(self.game.grid.read_element(k,l),(k,l) in self.playable_pos)
 
     def finish_game(self):
         self.information_1_label.setText("Gagnant :")
@@ -209,42 +232,12 @@ class Ui_Window(object):
             content.writerows([[str(number) for number in line] for line in self.stats_tab])
         self.stats()
 
-    def cell_test(self,i,j):
-        print("Case "+str(i)+","+str(j)+" activee")
-
-    def set_parameters(self,player_1_name,player_2_name,pvp_option):
-        self.game = Game(player_1_name,player_2_name,pvp_option,-1)
-        self.new_game_window.close()
-        self.setupUi()
-        self.retranslateUi()
-        self.start()
-
-    def new_game(self):
-        """Affiche le menu permettant de rentrer les paramètres pour lancer un nouveau jeu"""
-        # Les objets ne sont pas des attributs de la classe car ils n'ont pas
-        # vocation à exister hors de cette fonction
-        self.new_game_window = QtGui.QMainWindow()
-        self.new_game_window.setStyleSheet("QMainWindow {background: 'darkgrey';}")
-        central_widget = QtGui.QWidget(self.new_game_window)
-        self.new_game_window.setCentralWidget(central_widget)
-        layout = QtGui.QGridLayout()
-        central_widget.setLayout(layout)
-        player_1_label = QtGui.QLabel("Noir :")
-        layout.addWidget(player_1_label,0,0)
-        player_2_label = QtGui.QLabel("Blanc :")
-        layout.addWidget(player_2_label,1,0)
-        player_1_name = QtGui.QLineEdit("Joueur 1")
-        layout.addWidget(player_1_name,0,1)
-        player_2_name = QtGui.QLineEdit("Joueur 2")
-        layout.addWidget(player_2_name,1,1)
-        AI_box = QtGui.QCheckBox("IA")
-        layout.addWidget(AI_box,2,0)
-        start_button = QtGui.QPushButton("Commencer")
-        layout.addWidget(start_button,3,3)
-        self.new_game_window.setWindowTitle("Nouvelle partie")
-        self.new_game_window.show()
-        start_button.clicked.connect(lambda:self.set_parameters(player_1_name.text(),player_2_name.text(),not(AI_box.checkState())))
-
+    def restart(self):
+        """Relance une nouvelle partie en formatant les données de l'ancienne"""
+        self.game.empty_game()
+        self.playable_pos = self.game.valid_positions(self.game.current_player)[1]
+        self.refresh_display()
+        
     def stats(self):
         """Affiche la fenêtre contenant les statistiques du jeu"""
         # Les objets ne sont pas des attributs de la classe car ils n'ont pas
@@ -273,11 +266,8 @@ class Ui_Window(object):
         self.stats_window.show()
         self.stats_window.connect(exit_button, QtCore.SIGNAL('clicked()'), lambda:self.stats_window.close())
 
-    def ok(self):
-        print("Ok")
-
 import sys
 app = QtGui.QApplication(sys.argv)
-ui = Ui_Window()
+oth_win = Othello_Window()
 sys.exit(app.exec_())
 

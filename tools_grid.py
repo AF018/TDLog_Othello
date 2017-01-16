@@ -9,21 +9,23 @@ import tools
 #--------------------Classe grille d'entiers
 
 class Grid:
+    """Classe définissant une grille d'entiers valant 0 pour les cases inoccupées, ou -1 ou 1 selon le joueur qui occupe la place.
+    Sans aurgument."""
     
     def __init__(self):
+        """ Initialisation de la grille: création d'un tableau de taille 8 (lignes), chaque élément contenant 8 valeurs, initialement nulles."""
         self._size=8
         self.grid=[[0 for j in range(8)]for i in range (8)]
     
-
-    #validité des coordonnées: 
     def __contains__(self,p):
+        """Méthode qui prend en argument un couple et qui renvoie Vrai si les coordonnées sont valides ie bien dans la grille: 0=<x<taille et 0=<y<taille."""
         x,y=p
         return(x>=0 and y>=0 and x<self._size and y<self._size)   
         
     #@property
     
-    #Méthode qui renvoie l'élément de la ie ligne et je colonne
-    def read_element(self, i, j): #ligne i, colonne j
+    def read_element(self, i, j): 
+        """Méthode qui prend en argument deux entiers i et j, et qui renvoie l'élément de la ie ligne et je colonne de la grille."""
         try:
             tools.verify_bounds(i,j,self._size) # on vérifie que le couple (i,j) est bien dans la grille          
             return(self.grid[i][j])
@@ -31,8 +33,8 @@ class Grid:
             print ("erreur d'indice")
             
         
-    #Méthode qui modifie l'élément de la ie ligne et je colonne
     def write_element(self,i,j,elem):
+        """Méthode qui prend en argument trois entiersi,jet elem, et qui modifie l'élément de la ie ligne et je colonne en y plaçant elem."""
         try:
             tools.verify_bounds(i,j,self._size) # on vérifie que le couple (i,j) est bien dans la grille    
             tools.verify_value(elem) # on vérifie que l'élément a une valeur acceptable (1 ou -1)
@@ -43,20 +45,17 @@ class Grid:
         except tools.ErrorValue: #traitement si la valeur qu'on veut rentrer ne vaut ni 1 ni -1
             print ("impossible de rentrer cette valeur...")
             
-    def empty_grid(self): #met la grille à zero sans en recréer une nouvelle
+    def empty_grid(self): 
+        """Méthode qui met tous les éléments de la grille à zero (sans en recréer une nouvelle)."""
         for i in range(self._size):
             for j in range(self._size):
                 self.grid[i][j]=0
                 
-    
-    #Méthode qui renvoie Vrai si la cellule est vide ie non occupée
     def empty_cell(self,i,j):
+        """Méthode qui prend en argument deux entiers i et j et qui renvoie Vrai si la cellule est vide ie non occupée"""
         try:
             tools.verify_bounds(i,j,self._size) #on vérifie que la cellule est bien dansla grille
             return(self.grid[i][j]==0)
         except tools.ErrorIndex: #traitement si les indices débordent de la grille
             print("Cette case n'existe pas...")
         
-    #Méthode qui vide une case (met son contenu à 0)
-    def make_empty(self,i,j) : 
-        self.grid[i][j]=0

@@ -26,7 +26,8 @@ class Othello_Window():
         # Statistiques dans un fichier csv, lecture de chaque ligne du document pour récupérer
         with open("stats.csv", newline = '\n') as text:
             content = reader(text, delimiter = ',')
-            self.stats_tab=[[int(number) for number in line] for line in content]
+            self.stats_tab=[[info for info in line] for line in content]
+        print(self.stats_tab)
         self.new_game()
 
     def new_game(self):
@@ -43,21 +44,40 @@ class Othello_Window():
         layout.addWidget(player_1_label,0,0)
         player_2_label = QtGui.QLabel("Blanc :")
         layout.addWidget(player_2_label,1,0)
-        player_1_name = QtGui.QLineEdit("Joueur 1")
+        player_1_name = QtGui.QComboBox()
+        player_1_name.addItems([self.stats_tab[i][0] for i in range(len(self.stats_tab))])
         layout.addWidget(player_1_name,0,1)
-        player_2_name = QtGui.QLineEdit("Joueur 2")
+        player_2_name = QtGui.QComboBox()
+        player_2_name.addItems([self.stats_tab[i][0] for i in range(len(self.stats_tab))])
         layout.addWidget(player_2_name,1,1)
         AI_box = QtGui.QCheckBox("IA")
         layout.addWidget(AI_box,2,0)
+        creator_label = QtGui.QLabel("Nouveau profil :")
+        layout.addWidget(creator_label,3,0)
+        creator_text = QtGui.QLineEdit()
+        layout.addWidget(creator_text,3,1)
+        creator_button = QtGui.QPushButton("Créer profil")
+        layout.addWidget(creator_button,3,2)
         start_button = QtGui.QPushButton("Commencer")
-        layout.addWidget(start_button,3,3)
+        layout.addWidget(start_button,4,3)
         self.new_game_window.setWindowTitle("Nouvelle partie")
         self.new_game_window.show()
-        start_button.clicked.connect(lambda:self.set_parameters(player_1_name.text(),player_2_name.text(),not(AI_box.checkState())))
+        start_button.clicked.connect(lambda:self.set_parameters(player_1_name.currentText(),player_2_name.currentText(),not(AI_box.checkState())))
+        creator_button.clicked.connect(lambda:self.create_profile(creator_text.text()))
+        # Probleme, le nom se rajoute a la liste meme si il est refusé car il existe deja
+        creator_button.clicked.connect(lambda:player_1_name.addItem(creator_text.text()))
+        creator_button.clicked.connect(lambda:player_2_name.addItem(creator_text.text()))
+        
+    def create_profile(self,name):
+        if name not in [self.stats_tab[i][0] for i in range(len(self.stats_tab))]:
+            self.stats_tab.append([name,0,0,0])
+            self.save_stats()
 
-    def set_parameters(self,player_1_name,player_2_name,pvp_option):
+    def set_parameters(self,player_1_text,player_2_text,pvp_option):
         """Crée le jeu puis l'affiche"""
-        self.game = Game(player_1_name,player_2_name,pvp_option,-1)
+        if (player_1_text == player_2_text):
+            return
+        self.game = Game(player_1_text,player_2_text,pvp_option,-1)
         self.new_game_window.close()
         self.setup_window()
         self.setup_connections()
@@ -169,7 +189,7 @@ class Othello_Window():
             for j in range(self.length):
                 self.window.connect(self.buttons[i][j], QtCore.SIGNAL('clicked()'), self.cell_clicked(i,j))
         self.window.connect(self.action_new_game, QtCore.SIGNAL('triggered()'), self.restart)
-        self.window.connect(self.action_stats, QtCore.SIGNAL('triggered()'), self.stats)
+        self.window.connect(self.action_stats, QtCore.SIGNAL('triggered()'), self.display_stats)
 
     def cell_clicked(self,i,j):
         """Renvoie une fonction permettant de lancer le tour en cas d'activation d'une
@@ -221,16 +241,20 @@ class Othello_Window():
             for l in range(self.length):
                 self.buttons[k][l].refresh(self.game.grid.read_element(k,l),(k,l) in self.playable_pos)
 
+    # Attention mettre a jour les fonctionnalités avec IA
     def finish_game(self):
         self.information_1_label.setText("Gagnant :")
         self.information_2_label.setText("")
         # Mise a jour des statistiques
-        self.stats_tab[0][0]+=1
-        self.stats_tab[0][1]+=1
-        with open("stats.csv", 'w') as text:
-            content = writer(text)
-            content.writerows([[str(number) for number in line] for line in self.stats_tab])
-        self.stats()
+        winner_name = self.game.winner()
+        # Le type des éléments du tableau est la chaîne de caractère
+        # On fait attention à cela pour l actualisation
+        for player_stats in self.stats_tab:
+            if player_stats[0] == winner_name:
+                player_stats[1] = str(int(player_stats[1])+1)
+                player_stats[2] = str(int(player_stats[2])+1)
+        self.save_stats()
+        self.display_stats()
 
     def restart(self):
         """Relance une nouvelle partie en formatant les données de l'ancienne"""
@@ -238,7 +262,12 @@ class Othello_Window():
         self.playable_pos = self.game.valid_positions(self.game.current_player)[1]
         self.refresh_display()
         
-    def stats(self):
+    def save_stats(self):
+        with open("stats.csv", 'w') as text:
+            content = writer(text)
+            content.writerows([[info for info in line] for line in self.stats_tab])
+        
+    def display_stats(self):
         """Affiche la fenêtre contenant les statistiques du jeu"""
         # Les objets ne sont pas des attributs de la classe car ils n'ont pas
         # vocation à exister hors de cette fonction
@@ -248,23 +277,33 @@ class Othello_Window():
         self.stats_window.setCentralWidget(central_widget)
         layout = QtGui.QGridLayout()
         central_widget.setLayout(layout)
-        games_label = QtGui.QLabel("Nombre de parties :")
-        layout.addWidget(games_label,0,0)
-        games = QtGui.QLabel(str(self.stats_tab[0][0]))
-        layout.addWidget(games,0,1)
+        player_label = QtGui.QLabel("Joueur :")
+        layout.addWidget(player_label,0,0)
+        player_name = QtGui.QComboBox()
+        player_name.addItems([self.stats_tab[i][0] for i in range(len(self.stats_tab))])
+        layout.addWidget(player_name,0,1)
+        games_label = QtGui.QLabel("Nombre de parties jouées")
+        layout.addWidget(games_label,1,0)
+        games = QtGui.QLabel(self.stats_tab[player_name.currentIndex()][1])
+        layout.addWidget(games,1,1)
         not_AI_games_label = QtGui.QLabel("Nombre de parties sans IA :")
-        layout.addWidget(not_AI_games_label,1,0)
-        not_AI_games = QtGui.QLabel(str(self.stats_tab[0][1]))
-        layout.addWidget(not_AI_games,1,1)
+        layout.addWidget(not_AI_games_label,2,0)
+        not_AI_games = QtGui.QLabel(self.stats_tab[player_name.currentIndex()][2])
+        layout.addWidget(not_AI_games,2,1)
         AI_games_label = QtGui.QLabel("Nombre de parties avec IA :")
-        layout.addWidget(AI_games_label,2,0)
-        AI_games = QtGui.QLabel(str(self.stats_tab[0][2]))
-        layout.addWidget(AI_games,2,1)
+        layout.addWidget(AI_games_label,3,0)
+        AI_games = QtGui.QLabel(self.stats_tab[player_name.currentIndex()][3])
+        layout.addWidget(AI_games,3,1)
         exit_button = QtGui.QPushButton("Continuer")
-        layout.addWidget(exit_button,3,2)
+        layout.addWidget(exit_button,4,2)
         self.stats_window.setWindowTitle("Statistics")
         self.stats_window.show()
         self.stats_window.connect(exit_button, QtCore.SIGNAL('clicked()'), lambda:self.stats_window.close())
+        player_name.currentIndexChanged.connect(lambda:games.setText(self.stats_tab[player_name.currentIndex()][1]))
+        player_name.currentIndexChanged.connect(lambda:not_AI_games.setText(self.stats_tab[player_name.currentIndex()][2]))
+        player_name.currentIndexChanged.connect(lambda:AI_games.setText(self.stats_tab[player_name.currentIndex()][3]))
+        
+    
 
 import sys
 app = QtGui.QApplication(sys.argv)

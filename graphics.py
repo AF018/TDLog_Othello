@@ -27,7 +27,6 @@ class Othello_Window():
         with open("stats.csv", newline = '\n') as text:
             content = reader(text, delimiter = ',')
             self.stats_tab=[[info for info in line] for line in content]
-        print(self.stats_tab)
         self.new_game()
 
     def new_game(self):

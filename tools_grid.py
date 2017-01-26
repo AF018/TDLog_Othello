@@ -59,3 +59,6 @@ class Grid:
         except tools.ErrorIndex: #traitement si les indices débordent de la grille
             print("Cette case n'existe pas...")
         
+    #Méthode qui vide une case (met son contenu à 0)
+    def make_empty(self,i,j) : 
+        self.grid[i][j]=0

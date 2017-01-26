@@ -14,12 +14,23 @@ import tools_player
 class Game:
     """Classe de je qui prend en argument deux chaînes de carcatère qui sont les noms des joueurs."""
 
-    def __init__(self, name1, name2):
+    def __init__(self, name1, name2, pvp_option, color):
         """Initialisation"""
         self.grid=tools_grid.Grid()
-        self.player1=tools_player.Player(name1, -1)  #Noirs, -1       
-        self.player2=tools_player.Player(name2, 1)   #Blancs, 1 
-        self.current_player=self.player1
+        self.pvp = pvp_option
+        
+        if (self.pvp) : 
+            self.player1=tools_player.Player(name1, -1)  #Noirs, -1       
+            self.player2=tools_player.Player(name2, 1)   #Blancs, 1 
+            self.current_player=self.player1
+        else : 
+            self.player1=tools_player.Player(name1,color)
+            self.player2=tools_player.Player("IA",-1*color)
+            self.IA = self.player2
+            if (color==-1) : 
+                self.current_player=self.player1
+            else : 
+                self.current_player=self.player2
         
         #On place les pionts initiaux
         self.play_one_shot(3,3,self.player2)  
@@ -221,4 +232,98 @@ class Game:
         self.play_one_shot(3,4,self.player1)
         self.play_one_shot(4,3,self.player1) 
         
-                
+#NBNBNB : val_pos = valid_positions[1]                
+    def IA_play(self,val_pos,IAs_turn,depth,depth0,player,AI_pos) : 
+#        print "IA begins {0} {1}".format(val_pos[1][0][0],val_pos[1][0][1])
+#        origins=self.origins(val_pos[1][0][0],val_pos[1][0][1],self.player2)
+#        self.play_one_shot(val_pos[1][0][0],val_pos[1][0][1],self.player2)
+#        self.turn_pawn(val_pos[1][0][0],val_pos[1][0][1],self.player2,*origins)
+#        print "A pawn is turned..."
+    #    print "Entrée dans IA_play, avec depth={0}".format(depth)
+    #    print "val_pos",val_pos
+        if (depth==0) :
+            return 0
+#        val_pos = self.valid_positions(self.IA)
+        val_maxi=-1e5
+        val_mini=1e5
+        if (len(val_pos)==0) :
+            return 0
+   #     print "depth≠0 : on contine"
+        #On explore chaque coup possible pour l'IA.
+        for i in range (len(val_pos)) :
+        #On indique qu'on simule le coup en val_pos[i]
+        #Si c'est au tour de l'IA : on sélectionne le max
+            (xpawn,ypawn)=val_pos[i]
+            if (IAs_turn) :
+    #            print "IAsturn : play_one_shot en {0},{1}".format(xpawn,ypawn)
+                origins=self.origins(xpawn,ypawn,self.IA)
+                self.play_one_shot(xpawn,ypawn,self.IA)
+    #            print "coup joué"
+                self.turn_pawn(xpawn,ypawn,self.IA,*origins)
+    #            print "pion tourné ; appel à depth-1={0}".format(depth-1)
+                #NB : play_one_shot : pas beau
+    #            print "test : ",player.read_positions()
+                l = self.valid_positions(player)[1]
+    #            print "l : fait"
+                val_move = self.IA_play(l,1-IAs_turn,depth-1,depth0,player,AI_pos)
+    #            print "fin appel récursif, on revient à depth = {0}".format(depth)
+                if (val_maxi<=val_move) :
+                    val_maxi=val_move
+                    (xnext,ynext)=(xpawn,ypawn)
+            #On retire le pion
+                self.grid.make_empty(xpawn,ypawn)
+#                self.grid.write_element(xpawn,ypawn,0)
+                self.turn_pawn(xpawn,ypawn,player,*origins)
+                self.IA.no_more_occupy_position(xpawn,ypawn)
+    #            print "CETTE CASE DOIT ETRE 0000000000 : : : : : : fin IAsturn pour xpawn,ypawn = {0},{1} avec une valeur dans la case de 0 = {2}".format(xpawn,ypawn,self.grid.read_element(xpawn,ypawn))
+        #Sinon : le min
+            else :
+    #            print "joueur turn : play_one_shot en {0},{1}".format(xpawn,ypawn)
+                origins=self.origins(xpawn,ypawn,player)
+                self.play_one_shot(xpawn,ypawn,player)    #NB : Accès au nom du joueur ? Tablea
+     #           print "coup joué"
+                self.turn_pawn(xpawn,ypawn,player,*origins)
+                val_move = self.IA_play(self.valid_positions(self.IA)[1],1-IAs_turn,depth-1,depth0,player,AI_pos)
+                if (val_mini>=val_move) :
+                    val_mini=val_move
+                    (xnext,ynext)=(xpawn,ypawn)
+                #On retire le pion
+                self.grid.make_empty(xpawn,ypawn)
+#                self.grid.write_element(xpawn,ypawn,0)
+                self.turn_pawn(xpawn,ypawn,self.IA,*origins)
+                player.no_more_occupy_position(xpawn,ypawn)
+      #          print "CETTE CASE DOIT ETRE 0000000000  / / / / / / / / fin joueur turn pour xpawn,ypawn = {0},{1} AVEC UNE VALEUR DANS LA CASE DE 0 = {2}".format(xpawn,ypawn,self.grid.read_element(xpawn,ypawn))
+    #En sortie de boucle, (xnext,ynext) contient le coup conduisant au meilleur résultat
+    #Notons que l'IA (ou le joueur) peut se retrouver dans une situation où passer son tour est la meilleure $
+    #=> à rajouter !!! Pour l'instant, on suppose qu'on ne passe pas son tour
+    #Notons que pour la rajouter, il suffit dans la boucle for de faire un coup où on n'appelle pas play_one_$
+
+        score=-1*self.IA.read_score() + self.player2.read_score()
+        if (depth==depth0) :
+            AI_pos[0],AI_pos[1]=xnext,ynext
+#            origins=self.origins(xnext,ynext,self.IA)
+#            self.play_one_shot(xnext,ynext,self.IA)
+#            self.turn_pawn(xnext,ynext,self.IA,*origins)
+        score+=self.IA.read_score()-self.player2.read_score()
+    #    print "ù`ù$^$ù`ù$^$ù`ù$^$ù`^$`ù^!!!!!!!!!! ATTENTION : 6,7 = {0}".format(self.grid.read_element(6,7))
+        return score
+
+
+#Pour intégrer l'IA au code dans son ensemble :
+#lancer du jeu => souhaitez-vous une partie à deux joueurs ou contre l'IA => booléen IA
+#si IA : quelle couleur désirez-vous, + quel nom ? (double input)
+#et dans init : self.player1 = player(nom, couleurdonnée)
+#self.IA = player("IA",-1*couleurdonnée)
+#
+#sinon : habituel (double requête de nom)
+#init game : ce qui est déjà là
+#
+#=> du coup, IA est bien un attribut de game, c'est en réalité un player
+#
+#Dans le jeu lui même :
+#il suffit par exemple de faire un test à chaque tour : si le joueur courrant est l'IA,
+#au lieu de faire des inputs, on lance game.IA(self.valid_positions(game.IA),1,depthinitial,game.player1)
+#
+#
+#
+#

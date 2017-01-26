@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from PyQt4 import QtCore, QtGui
-from csv import reader,writer
-from utils import OthelloCell
+from utils import OthelloCell,Profiles
 import tools
 from tools_game import Game
 
@@ -24,10 +23,9 @@ class Othello_Window():
     def __init__(self):
         """Récupère les statistiques pour pouvoir les modifier et lance une partie"""
         # Statistiques dans un fichier csv, lecture de chaque ligne du document pour récupérer
-        with open("stats.csv", newline = '\n') as text:
-            content = reader(text, delimiter = ',')
-            self.stats_tab=[[info for info in line] for line in content]
+        self.profiles = Profiles()
         self.new_game()
+        print(self.profiles.stats_tab)
 
     def new_game(self):
         """Affiche le menu permettant de rentrer les paramètres pour lancer un nouveau jeu"""
@@ -44,10 +42,10 @@ class Othello_Window():
         player_2_label = QtGui.QLabel("Blanc :")
         layout.addWidget(player_2_label,1,0)
         player_1_name = QtGui.QComboBox()
-        player_1_name.addItems([self.stats_tab[i][0] for i in range(len(self.stats_tab))])
+        player_1_name.addItems(self.profiles.names())
         layout.addWidget(player_1_name,0,1)
         player_2_name = QtGui.QComboBox()
-        player_2_name.addItems([self.stats_tab[i][0] for i in range(len(self.stats_tab))])
+        player_2_name.addItems(self.profiles.names())
         layout.addWidget(player_2_name,1,1)
         AI_box = QtGui.QCheckBox("IA")
         layout.addWidget(AI_box,2,0)
@@ -62,15 +60,10 @@ class Othello_Window():
         self.new_game_window.setWindowTitle("Nouvelle partie")
         self.new_game_window.show()
         start_button.clicked.connect(lambda:self.set_parameters(player_1_name.currentText(),player_2_name.currentText(),not(AI_box.checkState())))
-        creator_button.clicked.connect(lambda:self.create_profile(creator_text.text()))
+        creator_button.clicked.connect(lambda:self.profiles.new_profile(creator_text.text()))
         # Probleme, le nom se rajoute a la liste meme si il est refusé car il existe deja
         creator_button.clicked.connect(lambda:player_1_name.addItem(creator_text.text()))
         creator_button.clicked.connect(lambda:player_2_name.addItem(creator_text.text()))
-        
-    def create_profile(self,name):
-        if name not in [self.stats_tab[i][0] for i in range(len(self.stats_tab))]:
-            self.stats_tab.append([name,0,0,0])
-            self.save_stats()
 
     def set_parameters(self,player_1_text,player_2_text,pvp_option):
         """Crée le jeu puis l'affiche"""
@@ -246,13 +239,7 @@ class Othello_Window():
         self.information_2_label.setText("")
         # Mise a jour des statistiques
         winner_name = self.game.winner()
-        # Le type des éléments du tableau est la chaîne de caractère
-        # On fait attention à cela pour l actualisation
-        for player_stats in self.stats_tab:
-            if player_stats[0] == winner_name:
-                player_stats[1] = str(int(player_stats[1])+1)
-                player_stats[2] = str(int(player_stats[2])+1)
-        self.save_stats()
+        self.profiles.update_stats(winner_name,0)
         self.display_stats()
 
     def restart(self):
@@ -264,7 +251,7 @@ class Othello_Window():
     def save_stats(self):
         with open("stats.csv", 'w') as text:
             content = writer(text)
-            content.writerows([[info for info in line] for line in self.stats_tab])
+            content.writerows([[info for info in line] for line in self.profiles.stats_tab])
         
     def display_stats(self):
         """Affiche la fenêtre contenant les statistiques du jeu"""
@@ -279,28 +266,28 @@ class Othello_Window():
         player_label = QtGui.QLabel("Joueur :")
         layout.addWidget(player_label,0,0)
         player_name = QtGui.QComboBox()
-        player_name.addItems([self.stats_tab[i][0] for i in range(len(self.stats_tab))])
+        player_name.addItems(self.profiles.names())
         layout.addWidget(player_name,0,1)
         games_label = QtGui.QLabel("Nombre de parties jouées")
         layout.addWidget(games_label,1,0)
-        games = QtGui.QLabel(self.stats_tab[player_name.currentIndex()][1])
+        games = QtGui.QLabel(self.profiles.stats_for_player(player_name.currentIndex())[0])
         layout.addWidget(games,1,1)
         not_AI_games_label = QtGui.QLabel("Nombre de parties sans IA :")
         layout.addWidget(not_AI_games_label,2,0)
-        not_AI_games = QtGui.QLabel(self.stats_tab[player_name.currentIndex()][2])
+        not_AI_games = QtGui.QLabel(self.profiles.stats_for_player(player_name.currentIndex())[1])
         layout.addWidget(not_AI_games,2,1)
         AI_games_label = QtGui.QLabel("Nombre de parties avec IA :")
         layout.addWidget(AI_games_label,3,0)
-        AI_games = QtGui.QLabel(self.stats_tab[player_name.currentIndex()][3])
+        AI_games = QtGui.QLabel(self.profiles.stats_for_player(player_name.currentIndex())[2])
         layout.addWidget(AI_games,3,1)
         exit_button = QtGui.QPushButton("Continuer")
         layout.addWidget(exit_button,4,2)
         self.stats_window.setWindowTitle("Statistics")
         self.stats_window.show()
         self.stats_window.connect(exit_button, QtCore.SIGNAL('clicked()'), lambda:self.stats_window.close())
-        player_name.currentIndexChanged.connect(lambda:games.setText(self.stats_tab[player_name.currentIndex()][1]))
-        player_name.currentIndexChanged.connect(lambda:not_AI_games.setText(self.stats_tab[player_name.currentIndex()][2]))
-        player_name.currentIndexChanged.connect(lambda:AI_games.setText(self.stats_tab[player_name.currentIndex()][3]))
+        player_name.currentIndexChanged.connect(lambda:games.setText(self.profiles.stats_for_player(player_name.currentIndex())[0]))
+        player_name.currentIndexChanged.connect(lambda:not_AI_games.setText(self.profiles.stats_for_player(player_name.currentIndex())[1]))
+        player_name.currentIndexChanged.connect(lambda:AI_games.setText(self.profiles.stats_for_player(player_name.currentIndex())[2]))
         
     
 

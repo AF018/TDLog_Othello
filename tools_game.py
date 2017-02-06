@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-	
 """
 Created on Wed Dec  7 13:30:44 2016
 
@@ -70,8 +70,8 @@ class Game:
             print("erreur  ce joueur n'existe pas")
         player.occupy_position(i,j)
         self.grid.write_element(i,j,player_nb)
-        
     
+
     def replacement(self,i,j,current_player):
         """Méthode qui prend en argument deux entiers i et j et un joueur, et qui remplace la case (i,j) de la grille par ce joueur.
         Cad: (i,j) est ajouté à la liste des positions occupées par le joueur, et enlevé de la liste du joueur adverse, et la grille 
@@ -215,6 +215,7 @@ class Game:
             return(self.player2.read_name())
         else:
             return("No one wins...")
+
     
     def empty_game(self):
         """Méthode qui réinitialise le jeu."""
@@ -233,7 +234,12 @@ class Game:
         self.play_one_shot(4,3,self.player1) 
         
 #NBNBNB : val_pos = valid_positions[1]                
-    def IA_play(self,val_pos,IAs_turn,depth,depth0,player,AI_pos) : 
+
+
+
+    #Ajouts alpha-beta : appels de IA_play : rajouter ab_max,ab_min            
+    def IA_play(self,val_pos,IAs_turn,depth,depth0,player,AI_pos,ab_max,ab_min) : #ab_max/min : un seul est signifiant et correspond au max/min des valeurs déjà calculées au même niveau que le noeud courant 
+
 #        print "IA begins {0} {1}".format(val_pos[1][0][0],val_pos[1][0][1])
 #        origins=self.origins(val_pos[1][0][0],val_pos[1][0][1],self.player2)
 #        self.play_one_shot(val_pos[1][0][0],val_pos[1][0][1],self.player2)
@@ -242,12 +248,12 @@ class Game:
     #    print "Entrée dans IA_play, avec depth={0}".format(depth)
     #    print "val_pos",val_pos
         if (depth==0) :
-            return 0
+            return self.IA.read_score()-self.player2.read_score()
 #        val_pos = self.valid_positions(self.IA)
         val_maxi=-1e5
         val_mini=1e5
         if (len(val_pos)==0) :
-            return 0
+            return -1e5
    #     print "depth≠0 : on contine"
         #On explore chaque coup possible pour l'IA.
         for i in range (len(val_pos)) :
@@ -265,17 +271,26 @@ class Game:
     #            print "test : ",player.read_positions()
                 l = self.valid_positions(player)[1]
     #            print "l : fait"
-                val_move = self.IA_play(l,1-IAs_turn,depth-1,depth0,player,AI_pos)
+
+                val_move = self.IA_play(l,1-IAs_turn,depth-1,depth0,player,AI_pos,val_maxi,val_mini)
     #            print "fin appel récursif, on revient à depth = {0}".format(depth)
-                if (val_maxi<=val_move) :
-                    val_maxi=val_move
-                    (xnext,ynext)=(xpawn,ypawn)
+
             #On retire le pion
                 self.grid.make_empty(xpawn,ypawn)
 #                self.grid.write_element(xpawn,ypawn,0)
                 self.turn_pawn(xpawn,ypawn,player,*origins)
                 self.IA.no_more_occupy_position(xpawn,ypawn)
     #            print "CETTE CASE DOIT ETRE 0000000000 : : : : : : fin IAsturn pour xpawn,ypawn = {0},{1} avec une valeur dans la case de 0 = {2}".format(xpawn,ypawn,self.grid.read_element(xpawn,ypawn))
+
+
+                if(val_move>=ab_min) : 
+                    (xnext,ynext)=(xpawn,ypawn)
+                    break
+
+    #            print "fin appel récursif, on revient à depth = {0}".format(depth)
+                if (val_maxi<=val_move) :
+                    val_maxi=val_move
+                    (xnext,ynext)=(xpawn,ypawn)
         #Sinon : le min
             else :
     #            print "joueur turn : play_one_shot en {0},{1}".format(xpawn,ypawn)
@@ -283,28 +298,38 @@ class Game:
                 self.play_one_shot(xpawn,ypawn,player)    #NB : Accès au nom du joueur ? Tablea
      #           print "coup joué"
                 self.turn_pawn(xpawn,ypawn,player,*origins)
-                val_move = self.IA_play(self.valid_positions(self.IA)[1],1-IAs_turn,depth-1,depth0,player,AI_pos)
-                if (val_mini>=val_move) :
-                    val_mini=val_move
-                    (xnext,ynext)=(xpawn,ypawn)
+
+                val_move = self.IA_play(self.valid_positions(self.IA)[1],1-IAs_turn,depth-1,depth0,player,AI_pos,val_maxi,val_mini)
+
+
                 #On retire le pion
                 self.grid.make_empty(xpawn,ypawn)
 #                self.grid.write_element(xpawn,ypawn,0)
                 self.turn_pawn(xpawn,ypawn,self.IA,*origins)
                 player.no_more_occupy_position(xpawn,ypawn)
       #          print "CETTE CASE DOIT ETRE 0000000000  / / / / / / / / fin joueur turn pour xpawn,ypawn = {0},{1} AVEC UNE VALEUR DANS LA CASE DE 0 = {2}".format(xpawn,ypawn,self.grid.read_element(xpawn,ypawn))
+
+
+                if (val_move<=ab_max) : 
+                    (xnext,ynext)=(xpawn,ypawn)
+                    break
+                if (val_mini>=val_move) :
+                    val_mini=val_move
+                    (xnext,ynext)=(xpawn,ypawn)
     #En sortie de boucle, (xnext,ynext) contient le coup conduisant au meilleur résultat
     #Notons que l'IA (ou le joueur) peut se retrouver dans une situation où passer son tour est la meilleure $
     #=> à rajouter !!! Pour l'instant, on suppose qu'on ne passe pas son tour
     #Notons que pour la rajouter, il suffit dans la boucle for de faire un coup où on n'appelle pas play_one_$
 
-        score=-1*self.IA.read_score() + self.player2.read_score()
+#        score=-1*self.IA.read_score() + self.player2.read_score()  NBNBNBNB : !!!!!!! ATTENTION : je ne comprends toujours pas j'ai écrit cette ligne !!! Normalement le score renvoyé pour un coup vaut la différence entre les positions occupées par l'IA et celles du joueur non ???
+        score=IAs_turn*val_maxi + (1-IAs_turn)*val_mini
         if (depth==depth0) :
             AI_pos[0],AI_pos[1]=xnext,ynext
 #            origins=self.origins(xnext,ynext,self.IA)
 #            self.play_one_shot(xnext,ynext,self.IA)
 #            self.turn_pawn(xnext,ynext,self.IA,*origins)
-        score+=self.IA.read_score()-self.player2.read_score()
+#        score+=self.IA.read_score()-self.player2.read_score()        NBNBNB : Normalement la valeur renvoyée ne dépend que de val_maxi/val_mini, faire gaffe !!!
+
     #    print "ù`ù$^$ù`ù$^$ù`ù$^$ù`^$`ù^!!!!!!!!!! ATTENTION : 6,7 = {0}".format(self.grid.read_element(6,7))
         return score
 
@@ -326,4 +351,4 @@ class Game:
 #
 #
 #
-#
+

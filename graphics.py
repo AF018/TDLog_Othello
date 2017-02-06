@@ -201,7 +201,7 @@ class Othello_Window():
                 self.playable_pos = self.game.valid_positions(self.game.current_player)[1]
             elif not(self.game.pvp):
                 AI_pos=[0,0]
-                self.game.IA_play(self.playable_pos,1,3,3,self.game.opponent(self.game.current_player),AI_pos)
+                self.game.IA_play(self.playable_pos,1,3,3,self.game.opponent(self.game.current_player),AI_pos,-1e5,1e5)
                 self.apply_move(AI_pos[0],AI_pos[1])
                 # Calcul de toutes les positions jouables dans self.playable_pos
                 self.playable_pos = self.game.valid_positions(self.game.current_player)[1]

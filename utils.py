@@ -41,6 +41,13 @@ class OthelloCell(QtGui.QLabel):
     def leaveEvent(self,event):
         if (self.color_nb == 0 and self.playable == 1):
             self.setPixmap(QtGui.QPixmap('cell.jpg'))
+
+def add_name(combo_box,name,names):
+    """Permet d'ajouter le nom name à un widget du type QComboBox
+    Utilisé pour le lancement du jeu dans la partie graphique, lorsqu'un
+    profil est crée"""
+    if name not in names:
+        combo_box.addItem(name)
             
 class Profiles:
     def __init__(self):
@@ -63,6 +70,9 @@ class Profiles:
         if name not in self.names():
             self.stats_tab.append([name,0,0,0])
             self.save_stats()
+
+    def is_new(self,name):
+        return name in self.names()
             
     def update_stats(self,winner,loser):
         """Met à jour les statistiques du perdant et du gagnant"""

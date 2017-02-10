@@ -65,4 +65,4 @@ while not game.end_game():
 
 print "Game Over !"
 #Quand lejeu s'arrête,on détermine le gagnant:
-game.winner() #renvoie une chaîne de caractère
+game.winner()[0] #renvoie une chaîne de caractère

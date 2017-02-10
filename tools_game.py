@@ -204,16 +204,20 @@ class Game:
         if self.valid_positions(self.player1)[1]==[] and self.valid_positions(self.player2)[1]==[]:
             return (True)
                 
+            
     def winner (self):
-        """ Méthode qui ne prend rien en argument et renvoie une chaîne de caractère: le nom du vainqueur."""
+        """ Méthode qui ne prend rien en argument et renvoie un tableau de 2 chaînes de caractère: le nom du vainqueur puis le nom du perdant."""
         score_player1=self.player1.read_score() 
         score_player2=self.player2.read_score()
         if score_player1>score_player2:
-            return(self.player1.read_name())
+            t=[self.player1.read_name(),self.player2.read_name()]
+            return(t)
         elif score_player2>score_player1:
-            return(self.player2.read_name())
+            t=[self.player2.read_name(),self.player1.read_name()]
+            return(t)    
         else:
             return("No one wins...")
+
 
     
     def empty_game(self):

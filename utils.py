@@ -31,7 +31,6 @@ class OthelloCell(QtGui.QLabel):
             self.playable = 0
 
     def mouseReleaseEvent(self, event):
-        print(self.playable)
         self.emit(QtCore.SIGNAL('clicked()'))
 
     def enterEvent(self,event):
@@ -57,9 +56,9 @@ class Profiles:
             content = reader(text, delimiter = ',')
             self.stats_tab=[[info for info in line] for line in content]
 
-    def stats_for_player(self,index):
+    def information(self,profile_nb,index):
         """Renvoie les statistiques associées au profil d'index i"""
-        return [self.stats_tab[index][i] for i in range(1,len(self.stats_tab[index]))]
+        return self.stats_tab[profile_nb][index]
 
     def names(self):
         """Renvoie la liste des noms des profils"""
@@ -68,20 +67,24 @@ class Profiles:
     def new_profile(self,name):
         """Crée un nouveau profil à partir d'un nom, vérifie que le nom n'est pas déjà existant"""
         if name not in self.names():
-            self.stats_tab.append([name,0,0,0])
+            self.stats_tab.append([name,0,0,0,0,0])
             self.save_stats()
-
-    def is_new(self,name):
-        return name in self.names()
             
-    def update_stats(self,winner,loser):
+    def update_stats(self,winner,loser,pvp):
         """Met à jour les statistiques du perdant et du gagnant"""
         # Le type des éléments du tableau est la chaîne de caractère
         # On fait attention à cela pour l actualisation
         for player_stats in self.stats_tab:
+            # 1 correspond au nombre de parties jouées,
+            # 2 aux parties gagnées sans IA, 3 perdues sans IA
+            # 4 aux parties gagnées avec IA, 5 perdues avec IA
+            # 4-2*int(pvp) donne 2 si la partie se joue sans IA, 4 sinon
             if player_stats[0] == winner:
                 player_stats[1] = str(int(player_stats[1])+1)
-                player_stats[2] = str(int(player_stats[2])+1)
+                player_stats[4-2*int(pvp)] = str(int(player_stats[4-2*int(pvp)])+1)
+            elif player_stats[0] == loser:
+                player_stats[1] = str(int(player_stats[1])+1)
+                player_stats[5-2*int(pvp)] = str(int(player_stats[5-2*int(pvp)])-1)
         self.save_stats()
         
     def save_stats(self):

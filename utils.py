@@ -67,8 +67,15 @@ class Profiles:
     def new_profile(self,name):
         """Crée un nouveau profil à partir d'un nom, vérifie que le nom n'est pas déjà existant"""
         if name not in self.names():
-            self.stats_tab.append([name,0,0,0,0,0])
+            self.stats_tab.append([name,"0","0","0","0","0","0"])
             self.save_stats()
+            
+    def increment_reboots(self,players):
+        for player_stats in self.stats_tab:
+            for i in [0,1]:
+                if player_stats[0]==players[i]:
+                    player_stats[6]=str(int(player_stats[6])+1)
+        self.save_stats()
             
     def update_stats(self,winner,loser,pvp):
         """Met à jour les statistiques du perdant et du gagnant"""
@@ -91,9 +98,4 @@ class Profiles:
         """Sauvegarde les données dans le fichier csv"""
         with open("stats.csv", 'w') as text:
             content = writer(text)
-            content.writerows([[info for info in line] for line in self.stats_tab])
-            
-            
-            
-            
-            
+            content.writerows([[info for info in line] for line in self.stats_tab]) 

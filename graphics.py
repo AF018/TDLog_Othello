@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from PyQt4 import QtCore, QtGui
-from utils import OthelloCell,add_name,Profiles
+from utils import OthelloCell,Profiles
 import tools
 from tools_game import Game
 
@@ -18,7 +18,7 @@ try:
 except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
-
+   
 class Othello_Window():
     def __init__(self):
         """Récupère les statistiques pour pouvoir les modifier et lance une partie"""
@@ -59,15 +59,11 @@ class Othello_Window():
         layout.addWidget(start_button,4,3)
         self.new_game_window.setWindowTitle("Nouvelle partie")
         self.new_game_window.show()
-        AI_box.stateChanged.connect(lambda:player_2_name.setEnabled(not AI_box.isChecked()))
-        # Ajout du nouveau profil à la liste des noms s'il n'existe pas déjà
-        creator_button.clicked.connect(lambda:add_name(player_1_name,creator_text.text(),self.profiles.names()))
-        creator_button.clicked.connect(lambda:add_name(player_2_name,creator_text.text(),self.profiles.names()))
+        start_button.clicked.connect(lambda:self.set_parameters(player_1_name.currentText(),player_2_name.currentText(),not(AI_box.checkState())))
         creator_button.clicked.connect(lambda:self.profiles.new_profile(creator_text.text()))
-        # Lancement du jeu avec les paramètres rentrés
-        start_button.clicked.connect(lambda:self.set_parameters(
-                                     player_1_name.currentText(),player_2_name.currentText(),
-                                     not(AI_box.checkState())))
+        # Probleme, le nom se rajoute a la liste meme si il est refusé car il existe deja
+        creator_button.clicked.connect(lambda:player_1_name.addItem(creator_text.text()))
+        creator_button.clicked.connect(lambda:player_2_name.addItem(creator_text.text()))
 
     def set_parameters(self,player_1_text,player_2_text,pvp_option):
         """Crée le jeu puis l'affiche"""
@@ -161,9 +157,7 @@ class Othello_Window():
         self.player_2.setText(self.game.player2.read_name())
         self.score_2.setStyleSheet("QLabel { color : white; }")
         self.score_2.setText(str(self.game.player2.read_score()))
-        self.information_1_label.setStyleSheet("QLabel { color : blue; }")
         self.information_1_label.setText("Au tour de :")
-        self.information_2_label.setStyleSheet("QLabel { color : blue; }")
         self.information_2_label.setText(self.game.player1.read_name())
         self.menuOthello.setTitle("Game")
         self.menuOptions.setTitle("Options")
@@ -203,41 +197,25 @@ class Othello_Window():
             self.playable_pos = self.game.valid_positions(self.game.current_player)[1]
             if len(self.playable_pos)==0:
                 # Changement de joueur si celui dont c'est le tour n'a pas de position admissible
-                # On actualise le joueur dont c'est le tour ainsi que ses coups admissibles
                 self.game.current_player=self.game.opponent(self.game.current_player)
                 self.playable_pos = self.game.valid_positions(self.game.current_player)[1]
             elif not(self.game.pvp):
-                # Pause pour que le joueur puisse visualiser son coup puis celui de l'IA
-                self.refresh_display()
-                
-                # PROBLEME ICI DE TIME SLEEP
-                
-                
-                # L'IA joue, et rejoue si l'adversaire est bloqué
-                # time_to_play indique si c'est le premier coup fait après celui de l'autre joueur
-                time_to_play = True
-                while((time_to_play or len(self.game.valid_positions(self.game.opponent(self.game.current_player))[1])==0)
-                       and not self.game.end_game()):
-                    # Calcul du mouvement de l'IA
-                    AI_pos=[0,0]
-                    self.game.IA_play(self.playable_pos,1,3,3,self.game.opponent(self.game.current_player),AI_pos,-1e5,1e5)
-                    # On applique le mouvement en gardant l'IA comme joueur actuel
-                    self.apply_move(AI_pos[0],AI_pos[1])
-                    self.game.current_player=self.game.opponent(self.game.current_player)
-                    # On passe time_to_play a False : l'IA ne rejoue que si l'autre joueur n'a pas de coup
-                    time_to_play = False
-                # Une fois le(s) coup(s) de l'IA joué(s), on met comme joueur courant le joueur humain et on
-                # calcule ses coups admissibles
-                self.game.current_player=self.game.opponent(self.game.current_player)
+                AI_pos=[0,0]
+                self.game.AI_play(self.playable_pos,1,3,3,self.game.opponent(self.game.current_player),AI_pos,-1e5,1e5)
+                self.apply_move(AI_pos[0],AI_pos[1])
+                # Calcul de toutes les positions jouables dans self.playable_pos
                 self.playable_pos = self.game.valid_positions(self.game.current_player)[1]
-            # On actualise l'affichage du plateau
+                if len(self.playable_pos)==0:
+                    # Changement de joueur si celui dont c'est le tour n'a pas de position admissible
+                    self.game.current_player=self.game.opponent(self.game.current_player)
+                    self.playable_pos = self.game.valid_positions(self.game.current_player)[1]
             self.refresh_display()
             if self.game.end_game():
                 self.finish_game()
         self.game.display()
+        return
 
     def apply_move(self,i,j):
-        """Applique le coup (i,j), et change le joueur actuel"""
         # Calcul des positions des pions qui vont être "en bout de ligne" pour les retournements
         origins=self.game.origins(i,j,self.game.current_player)
         # Commande permettant de jouer le mouvement proposé
@@ -248,7 +226,6 @@ class Othello_Window():
         self.game.current_player=self.game.opponent(self.game.current_player)
 
     def refresh_display(self):
-        """Met à jour l'affichage de la grille"""
         self.information_2_label.setText(self.game.current_player.read_name())
         self.score_1.setText(str(self.game.player1.read_score()))
         self.score_2.setText(str(self.game.player2.read_score()))
@@ -256,10 +233,8 @@ class Othello_Window():
             for l in range(self.length):
                 self.buttons[k][l].refresh(self.game.grid.read_element(k,l),(k,l) in self.playable_pos)
 
-    # Attention mettre a jour les fonctionnalités avec IA
-    # Pas encore fini, il faut avoir une methode de Game qui renvoie gagnant et perdant
+    # Attention mettre a jour les fonctionnalités avec AI
     def finish_game(self):
-        """Affiche le gagnant, met à jour les statistiques et les enregistre, puis les affiche"""
         self.information_1_label.setText("Gagnant :")
         self.information_2_label.setText("")
         # Mise a jour des statistiques
@@ -272,6 +247,11 @@ class Othello_Window():
         self.game.empty_game()
         self.playable_pos = self.game.valid_positions(self.game.current_player)[1]
         self.refresh_display()
+        
+    def save_stats(self):
+        with open("stats.csv", 'w') as text:
+            content = writer(text)
+            content.writerows([[info for info in line] for line in self.profiles.stats_tab])
         
     def display_stats(self):
         """Affiche la fenêtre contenant les statistiques du jeu"""

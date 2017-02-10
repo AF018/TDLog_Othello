@@ -140,6 +140,13 @@ class Game:
                                        
         final=[possible_origins,accessible_positions]
         return(final)
+    
+    def simplified_valid_positions(self,player):
+        "Méthode qui renvoie uniquement la liste des positions admissibles, sans doublon, sous forme de tableau"
+        unsimplified_list=self.valid_positions(player)[1]
+        s=set(unsimplified_list)
+        simplified_list=list(s)
+        return(simplified_list)
            
     def verify_accepted_position(self,i,j,player):
         """ Méthode qui prend en argument deux entiers i et j et un joueur, et qui renvoie Vrai si (i,j) est une position accessible au joueur."""

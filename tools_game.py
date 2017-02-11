@@ -225,6 +225,13 @@ class Game:
         else:
             return("No one wins...")
 
+    def contain_killer_move(self,val_pos,move) : 
+        i=0
+        while (i<len(val_pos)) : 
+            if (val_pos[i]==move) : 
+                return i
+            i+=1
+        return -1
 
     
     def empty_game(self):
@@ -260,7 +267,12 @@ class Game:
     #    print "val_pos",val_pos
         if (depth==0) :
             return self.compute_score(self.AI.read_positions(),self.grid.pawn_values)-self.compute_score(player.read_positions(),self.grid.pawn_values)
-
+#        if(depth==depth0) : 
+ #           for i in range (depth0-1) :
+  #              self.grid.nb_killer_move[i]=0 
+   #             for j in range (2) : 
+    #KKKKKILLERMOVE                self.grid.killer_move[i][j]=(-1,-1)
+                
 
 #            return self.AI.read_score()-self.player2.read_score() : ancienne  version DEBILE
 #        val_pos = self.valid_positions(self.AI)
@@ -268,13 +280,19 @@ class Game:
         val_mini=1e5
         if (len(val_pos)==0) :
             if(AIs_turn) : 
-                return self.AI_play(self.valid_positions(player)[1],1-AIs_turn,depth-1,depth0,player,AI_pos,val_maxi,val_mini)
+                return self.AI_play(self.simplified_valid_positions(player),1-AIs_turn,depth-1,depth0,player,AI_pos,val_maxi,val_mini)            #Ici : +simplify, - [1]
             else : 
-                return self.AI_play(self.valid_positions(self.AI)[1],1-AIs_turn,depth-1,depth0,player,AI_pos,val_maxi,val_mini)
+                return self.AI_play(self.simplified_valid_positions(self.AI),1-AIs_turn,depth-1,depth0,player,AI_pos,val_maxi,val_mini)
 
 #            return -1e5
    #     print "depth≠0 : on contine"
         #On explore chaque coup possible pour l'AI.
+#        if (self.grid.nb_killer_move[depth-1]!=0) :        #Killer move             
+    #Oui \o/        val_pos.sort()
+ #           for i in range (self.grid.nb_killer_move[depth-1]) : 
+  #              index=self.contain_killer_move(val_pos,self.grid.killer_move[depth-1][i])
+   #             if (index>-1) : 
+    #                val_pos=[val_pos[index]]+val_pos[:index-1]+val_pos[index+1:]
         for i in range (len(val_pos)) :
         #On indique qu'on simule le coup en val_pos[i]
         #Si c'est au tour de l'AI : on sélectionne le max
@@ -288,7 +306,7 @@ class Game:
     #            print "pion tourné ; appel à depth-1={0}".format(depth-1)
                 #NB : play_one_shot : pas beau
     #            print "test : ",player.read_positions()
-                l = self.valid_positions(player)[1]
+                l = self.simplified_valid_positions(player)  #simpl, -[1]
     #            print "l : fait"
 
                 val_move = self.AI_play(l,1-AIs_turn,depth-1,depth0,player,AI_pos,val_maxi,val_mini)
@@ -304,6 +322,9 @@ class Game:
 
                 if(val_move>=ab_min) : 
                     (xnext,ynext)=(xpawn,ypawn)
+#                    if (self.grid.nb_killer_move[depth-1]<2) : 
+ #                       self.grid.nb_killer_move[depth-1]+=1
+  #KKKKMMM                  self.grid.killer_move[depth-1][self.grid.nb_killer_move[depth-1]-1]=(xnext,ynext)
                     break
 
     #            print "fin appel récursif, on revient à depth = {0}".format(depth)
@@ -318,7 +339,7 @@ class Game:
      #           print "coup joué"
                 self.turn_pawn(xpawn,ypawn,player,*origins)
 
-                val_move = self.AI_play(self.valid_positions(self.AI)[1],1-AIs_turn,depth-1,depth0,player,AI_pos,val_maxi,val_mini)
+                val_move = self.AI_play(self.simplified_valid_positions(self.AI),1-AIs_turn,depth-1,depth0,player,AI_pos,val_maxi,val_mini)
 
 
                 #On retire le pion
@@ -331,6 +352,9 @@ class Game:
 
                 if (val_move<=ab_max) : 
                     (xnext,ynext)=(xpawn,ypawn)
+#                    if (self.grid.nb_killer_move[depth-1]<2) : 
+ #                       self.grid.nb_killer_move[depth-1]+=1
+  #KKKKMMMM                  self.grid.killer_move[depth-1][self.grid.nb_killer_move[depth-1]-1]=(xnext,ynext)
                     break
                 if (val_mini>=val_move) :
                     val_mini=val_move

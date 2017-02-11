@@ -16,6 +16,18 @@ class Grid:
         """ Initialisation de la grille: création d'un tableau de taille 8 (lignes), chaque élément contenant 8 valeurs, initialement nulles."""
         self._size=8
         self.grid=[[0 for j in range(8)]for i in range (8)]
+        self.pawn_values=[[0 for j in range(8)]for i in range (8)]
+        for i in range (8) :
+    	    for j in range (8) :
+		        self.pawn_values[i][j]=4
+		        if((i==0)or(j==0)or(i==7)or(j==7)) :
+			        self.pawn_values[i][j]=6
+		        if (((i==0)or(i==7))and((j==0)or(j==7))) :
+			        self.pawn_values[i][j]=8
+		        if ((i==1)or(j==1)or(i==6)or(j==6)) :
+			        self.pawn_values[i][j]=1
+
+
     
     def __contains__(self,p):
         """Méthode qui prend en argument un couple et qui renvoie Vrai si les coordonnées sont valides ie bien dans la grille: 0=<x<taille et 0=<y<taille."""

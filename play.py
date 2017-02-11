@@ -15,6 +15,7 @@ if (pvp) :
 else : 
     color=input("Voulez-vous les noirs (-1) ou les blancs (1) ?")
     nom2="IA"
+    AI_pos=[0,0]
     #Creation du jeu
 game=tools_game.Game(nom1,nom2,pvp,color)
     
@@ -40,7 +41,11 @@ while not game.end_game():
             position_tested_i=int(input('Entrez la position desiree:i:'))
             position_tested_j=int(input('Entrez la position desiree:j:'))
         else : 
-            game.AI_play(game.valid_positions(game.player2),1,13,13,game.player1,-1e5,1e5)
+            game.AI_play(game.valid_positions(game.player2)[1],1,7,7,game.player1,AI_pos,-1e5,1e5)
+            origins=game.origins(AI_pos[0],AI_pos[1],game.AI)
+            game.play_one_shot(AI_pos[0],AI_pos[1],game.AI)
+            game.turn_pawn(AI_pos[0],AI_pos[1],game.AI,*origins)
+
            
         try:
             if (pvp or game.current_player.read_name()<>"IA") : 

@@ -243,7 +243,11 @@ class Game:
         self.play_one_shot(3,4,self.player1)
         self.play_one_shot(4,3,self.player1) 
 
-       
+    def compute_score(self,pawns,values) : 
+        s=0
+        for pawn in pawns : 
+            s+=values[pawn[0]][pawn[1]]
+        return s       
     #Ajouts alpha-beta : appels de IA_play : rajouter ab_max,ab_min            
     def AI_play(self,val_pos,AIs_turn,depth,depth0,player,AI_pos,ab_max,ab_min) : #ab_max/min : un seul est signifiant et correspond au max/min des valeurs déjà calculées au même niveau que le noeud courant 
 
@@ -255,12 +259,20 @@ class Game:
     #    print "Entrée dans AI_play, avec depth={0}".format(depth)
     #    print "val_pos",val_pos
         if (depth==0) :
-            return self.AI.read_score()-self.player2.read_score()
+            return self.compute_score(self.AI.read_positions(),self.grid.pawn_values)-self.compute_score(player.read_positions(),self.grid.pawn_values)
+
+
+#            return self.AI.read_score()-self.player2.read_score() : ancienne  version DEBILE
 #        val_pos = self.valid_positions(self.AI)
         val_maxi=-1e5
         val_mini=1e5
         if (len(val_pos)==0) :
-            return -1e5
+            if(AIs_turn) : 
+                return self.AI_play(self.valid_positions(player)[1],1-AIs_turn,depth-1,depth0,player,AI_pos,val_maxi,val_mini)
+            else : 
+                return self.AI_play(self.valid_positions(self.AI)[1],1-AIs_turn,depth-1,depth0,player,AI_pos,val_maxi,val_mini)
+
+#            return -1e5
    #     print "depth≠0 : on contine"
         #On explore chaque coup possible pour l'AI.
         for i in range (len(val_pos)) :

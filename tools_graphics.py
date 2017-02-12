@@ -1,3 +1,5 @@
+"""Outils pour l'interface graphique : cases du plateau et statistiques"""
+
 from PyQt4 import QtCore, QtGui
 from csv import reader,writer
 
@@ -91,7 +93,7 @@ class Profiles:
                 player_stats[4-2*int(pvp)] = str(int(player_stats[4-2*int(pvp)])+1)
             elif player_stats[0] == loser:
                 player_stats[1] = str(int(player_stats[1])+1)
-                player_stats[5-2*int(pvp)] = str(int(player_stats[5-2*int(pvp)])-1)
+                player_stats[5-2*int(pvp)] = str(int(player_stats[5-2*int(pvp)])+1)
         self.save_stats()
         
     def save_stats(self):

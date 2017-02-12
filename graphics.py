@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 from PyQt4 import QtCore, QtGui
-from utils import OthelloCell, add_name, Profiles
+from tools_graphics import OthelloCell, add_name, Profiles
 from tools_game import Game
 
 class OthelloWindow():
@@ -12,7 +12,6 @@ class OthelloWindow():
         # Statistiques dans un fichier csv, lecture de chaque ligne du document pour récupérer
         self.profiles = Profiles()
         self.new_game()
-        print(self.profiles.stats_tab)
 
     def new_game(self):
         """Affiche le menu permettant de rentrer les paramètres pour lancer un nouveau jeu"""
@@ -203,7 +202,7 @@ class OthelloWindow():
                       and not self.game.end_game()):
                     # Calcul du mouvement de l'IA
                     AI_pos = [0, 0]
-                    self.game.AI_play(self.playable_pos, 1, 3, 3, self.game.opponent(self.game.current_player), AI_pos, -1e5, 1e5)
+                    self.game.AI_play(self.playable_pos, 1, 4, 4, self.game.opponent(self.game.current_player), AI_pos, -1e5, 1e5)
                     # On applique le mouvement en gardant l'IA comme joueur actuel
                     self.apply_move(AI_pos[0], AI_pos[1])
                     self.game.current_player = self.game.opponent(self.game.current_player)
@@ -238,15 +237,13 @@ class OthelloWindow():
             for l in range(self.length):
                 self.buttons[k][l].refresh(self.game.grid.read_element(k, l), (k, l) in self.playable_pos)
 
-    # Attention mettre a jour les fonctionnalités avec IA
-    # Pas encore fini, il faut avoir une methode de Game qui renvoie gagnant et perdant
     def finish_game(self):
         """Affiche le gagnant, met à jour les statistiques et les enregistre, puis les affiche"""
-        self.information_1_label.setText("Gagnant :")
-        self.information_2_label.setText("")
-        # Mise a jour des statistiques
         (winner,loser) = self.game.winner()
-        self.profiles.update_stats(winner_name, 0, self.game.pvp)
+        self.information_1_label.setText("Gagnant :")
+        self.information_2_label.setText(winner)
+        # Mise a jour des statistiques
+        self.profiles.update_stats(winner, loser, self.game.pvp)
         self.display_stats()
 
     def restart(self):
@@ -305,8 +302,6 @@ class OthelloWindow():
         player_name.currentIndexChanged.connect(lambda: aiw_games.setText(self.profiles.information(player_name.currentIndex(), 4)))
         player_name.currentIndexChanged.connect(lambda: ail_games.setText(self.profiles.information(player_name.currentIndex(), 5)))
         player_name.currentIndexChanged.connect(lambda: reboot_nb.setText(self.profiles.information(player_name.currentIndex(), 6)))
-
-
 
 import sys
 app = QtGui.QApplication(sys.argv)

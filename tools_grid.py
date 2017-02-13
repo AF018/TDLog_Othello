@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Dec  7 13:21:20 2016
-
-@author: Paloma
+Classe de l'othellier (grille d'entiers)
 """
+
 import tools
 
 #--------------------Classe grille d'entiers

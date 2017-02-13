@@ -1,6 +1,8 @@
-"""Partie graphique du jeu d'Othello"""
-
 # -*- coding: utf-8 -*-
+"""
+Created on Wed Dec  7 14:54:26 2016
+Partie graphique du jeu d'Othello
+"""
 
 from PyQt4 import QtCore, QtGui
 from tools_graphics import OthelloCell, add_name, Profiles

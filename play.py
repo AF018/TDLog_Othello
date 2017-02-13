@@ -1,7 +1,7 @@
  # -*- coding: utf-8 -*-
 """
 Created on Wed Dec  7 13:36:13 2016
-@author: Paloma
+A exécuter pour jouer (partie console du jeu d'Othello)
 """
 import tools
 import tools_game

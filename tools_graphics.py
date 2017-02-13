@@ -1,4 +1,8 @@
-"""Outils pour l'interface graphique : cases du plateau et statistiques"""
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Dec  7 16:03:34 2016
+Outils pour l'interface graphique : cases du plateau et statistiques
+"""
 
 from PyQt4 import QtCore, QtGui
 from csv import reader,writer

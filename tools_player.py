@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Dec  7 13:26:43 2016
-
-@author: Paloma
+Classe du joueur d'Othello
 """
 
 import tools

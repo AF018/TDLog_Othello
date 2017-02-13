@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-	
 """
 Created on Wed Dec  7 13:30:44 2016
-@author: Paloma
+Classe relative au jeu (mouvement des pions)
 """
 
 import tools

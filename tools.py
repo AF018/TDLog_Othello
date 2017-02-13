@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Dec  7 13:19:56 2016
-
-@author: Paloma
+Fonctions élémentaires et classes d'exception
 """
 
 

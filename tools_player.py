@@ -5,8 +5,7 @@ Classe du joueur d'Othello
 """
 
 import tools
-      
-#-----------------------------------Classe Joueur
+
 class Player:
     """Classe du joueur, qui prend en argument une chaine de caractère (le nom) et une valeur qui sera affectée au joueur."""
     

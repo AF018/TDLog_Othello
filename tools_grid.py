@@ -6,7 +6,6 @@ Classe de l'othellier (grille d'entiers)
 
 import tools
 
-#--------------------Classe grille d'entiers
 
 class Grid:
     """Classe définissant une grille d'entiers valant 0 pour les cases inoccupées, ou -1 ou 1 selon le joueur qui occupe la place.
@@ -26,7 +25,8 @@ class Grid:
 			        self.pawn_values[i][j]=17
 		        if ((i==1)or(j==1)or(i==6)or(j==6)) :
 			        self.pawn_values[i][j]=1
-                self.killer_move=[[(-1,-1) for j in range(2)]for i in range (7)]
+        
+        self.killer_move=[[(-1,-1) for j in range(2)]for i in range (7)]
         self.nb_killer_move=[0 for i in range (7)]
 
 #    def __lshift__(self,pawn1,pawn2,move) :
@@ -75,6 +75,6 @@ class Grid:
         except tools.ErrorIndex: #traitement si les indices débordent de la grille
             print("Cette case n'existe pas...")
         
-    #Méthode qui vide une case (met son contenu à 0)
     def make_empty(self,i,j) : 
+        """Méthode qui vide une case (met son contenu à 0)"""
         self.grid[i][j]=0

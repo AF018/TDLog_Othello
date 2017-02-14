@@ -18,11 +18,6 @@ else :
     AI_pos=[0,0]
     #Creation du jeu
 game=tools_game.Game(nom1,nom2,pvp,color)
-    
-    #initialisation du jeu
-    
-    #Si on veut séparer la création de la grille et le placement des 4 pions initiaux
-    #game.initia()
 
   
 while not game.end_game():

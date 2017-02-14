@@ -8,7 +8,7 @@ import tools
 import tools_grid
 import tools_player
 
-#Classe Jeu
+#
 
 class Game:
     """Classe de je qui prend en argument deux chaînes de carcatère qui sont les noms des joueurs."""
@@ -37,13 +37,6 @@ class Game:
         self.play_one_shot(3,4,self.player1)
         self.play_one_shot(4,3,self.player1)         
         
-
-    def number_to_player(self,number):
-        """Méthode qui prend un nombre -1 ou 1 en argument et qui renvoie le joueur coresspondant. (en sortie: instance de la classe Player"""
-        if number==-1:
-            return(self.player1)
-        elif number==1:
-            return(self.player2)
      
     def opponent(self,player):
         """Méthode qui renvoie le joueur opposé à celui pris en argument. """
@@ -58,18 +51,7 @@ class Game:
         player.occupy_position(i,j)
         self.grid.write_element(i,j,player.read_value())
         
-         
-    def play_one_shot_bis(self,i,j,player_nb):                    
-        """Idem que play_one_shot mais prend en argument non pas le joueur mais un nombre, crrespondant à la valeur du joueur."""
-        if (player_nb==-1):
-            player=self.player1
-        elif (player_nb==1):
-            player=self.player2
-        else:
-            print("erreur  ce joueur n'existe pas")
-        player.occupy_position(i,j)
-        self.grid.write_element(i,j,player_nb)
-    
+
 
     def replacement(self,i,j,current_player):
         """Méthode qui prend en argument deux entiers i et j et un joueur, et qui remplace la case (i,j) de la grille par ce joueur.
@@ -80,21 +62,6 @@ class Game:
         opponent_player=self.opponent(current_player)
         opponent_player.no_more_occupy_position(i,j)
         
-    def initia(self):
-        """ Méthode qui ne prend aucun argument, et qui joue les 4 coups initiaux."""
-        self.play_one_shot(3,3,self.player2)  
-        self.play_one_shot(4,4,self.player2)
-        self.play_one_shot(3,4,self.player1)
-        self.play_one_shot(4,3,self.player1)
-
-        
-    def initia_bis(self):
-        """ Idem que initia mais d'une autre manière"""
-        self.play_one_shot_bis(3,3,1)  
-        self.play_one_shot_bis(4,4,1)
-        self.play_one_shot_bis(3,4,0)
-        self.play_one_shot_bis(4,3,0)
-    
         
     def display(self):
         """ Méthode qui affiche l'état courant du damier"""
@@ -171,7 +138,7 @@ class Game:
         
         
     def turn_pawn(self,i,j,player,*tab):
-        """ Méthode qui prend en argument deux entiers i, j, un joueur et un tableau, et qui retourne tous les pions (joueur adverse -> joueur courant) entre (i,j) et les positions contenues dasn tab, les extrémités cad (i,j) et les couples de tab étant exclues."""
+        """ Méthode qui prend en argument deux entiers i, j, un joueur et un tableau, et qui retourne tous les pions (joueur adverse -> joueur courant) entre (i,j) et les positions contenues dans tab, les extrémités cad (i,j) et les couples de tab étant exclues."""
         for pair in tab:
             x_origin,y_origin= pair
             dx=i-x_origin
@@ -213,7 +180,7 @@ class Game:
                 
             
     def winner (self):
-        """ Méthode qui ne prend rien en argument et renvoie un tableau de 2 chaînes de caractère: le nom du vainqueur puis le nom du perdant."""
+        """ Méthode qui ne prend rien en argument et renvoie un tableau de 2 chaînes de caractère (le nom du vainqueur puis le nom du perdant) si il y a un vainqueur, un message adapté sinon."""
         score_player1=self.player1.read_score() 
         score_player2=self.player2.read_score()
         if score_player1>score_player2:

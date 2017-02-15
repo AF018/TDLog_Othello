@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 Created on Wed Dec  7 14:54:26 2016
 Partie graphique du jeu d'Othello
@@ -9,6 +10,8 @@ from tools_graphics import OthelloCell, add_name, Profiles
 from tools_game import Game
 
 class OthelloWindow():
+    """Classe englobant tout l'affichage et le déroulement du jeu"""
+
     def __init__(self):
         """Récupère les statistiques pour pouvoir les modifier et lance une partie"""
         # Statistiques dans un fichier csv, lecture de chaque ligne du document pour récupérer

@@ -4,7 +4,6 @@ Created on Wed Dec  7 13:19:56 2016
 Fonctions élémentaires et classes d'exception
 """
 
-
 #---------------------------Classes d'exception
 class ErrorIndex (Exception): 
     """ Exception pour les indices à l'extérieur de la grille """

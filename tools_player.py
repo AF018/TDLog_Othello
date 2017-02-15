@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 Created on Wed Dec  7 13:26:43 2016
 Classe du joueur d'Othello
@@ -16,9 +17,6 @@ class Player:
         self.score=0 #correspond au nombre de positions occupées
         self.used_positions=[] 
         self._value=value # valeur affectée au joueur
-        
-       
-    #@property 
      
     def read_name(self):
         """Méthode qui ne prend pas d'argument et qui renvoie le nom du joueur """
@@ -40,7 +38,7 @@ class Player:
         """Méthode qui prend en argument deux entiers i et j et qui ajoute la position (i,j) à la liste des positions occupées par le joueur"""
         try:
             self.used_positions.append((i,j)) #On ajoute la position à la liste des positions occupées           
-        except tools.ErrorIndex: #Tritement de l'exception
+        except tools.ErrorIndex: #Traitement de l'exception
             print("Hors de la grille ....")
     
     def no_more_occupy_position(self,i,j):

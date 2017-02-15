@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-	
+# -*- coding: utf-8 -*-
+
 """
 Created on Wed Dec  7 13:30:44 2016
 Classe relative au jeu (mouvement des pions)
@@ -7,8 +8,6 @@ Classe relative au jeu (mouvement des pions)
 import tools
 import tools_grid
 import tools_player
-
-#
 
 class Game:
     """Classe de je qui prend en argument deux chaînes de carcatère qui sont les noms des joueurs."""
@@ -36,8 +35,7 @@ class Game:
         self.play_one_shot(4,4,self.player2)
         self.play_one_shot(3,4,self.player1)
         self.play_one_shot(4,3,self.player1)         
-        
-     
+
     def opponent(self,player):
         """Méthode qui renvoie le joueur opposé à celui pris en argument. """
         if player==self.player1:
@@ -50,8 +48,6 @@ class Game:
         occupées par le joueur et inscrit la valeur associée au joueur dans la grille."""
         player.occupy_position(i,j)
         self.grid.write_element(i,j,player.read_value())
-        
-
 
     def replacement(self,i,j,current_player):
         """Méthode qui prend en argument deux entiers i et j et un joueur, et qui remplace la case (i,j) de la grille par ce joueur.
@@ -61,8 +57,7 @@ class Game:
         self.grid.write_element(i,j,current_player.read_value())
         opponent_player=self.opponent(current_player)
         opponent_player.no_more_occupy_position(i,j)
-        
-        
+
     def display(self):
         """ Méthode qui affiche l'état courant du damier"""
         for i in range(8):
@@ -71,8 +66,7 @@ class Game:
                 #Afin d'aligner les nombres, et en considérant que ceux-ci ne possederont pas 4 chiffres, on les espace ainsi
                 line=line + " "*(4-len(str(self.grid.read_element(i,j)))) + str(self.grid.read_element(i,j))    
             print (line)
-    
-    
+
     def valid_positions(self,player): 
         """Méthode qui retourne un tableau, avec en tableau[0] la liste des positions (i,j) des pions courants du joueur qui peuvent servir d'origine et
     en tableau[1] les positions accessibles (i,j) en correspondance avec l'origine."""
@@ -86,7 +80,6 @@ class Game:
             #Liste des voisins adverses pour un pion du joueur courant                       
             neighbours=[(x+i,y+j) for i in [-1,0,1] for j in [-1,0,1] if (x+i,y+j) in self.grid and not self.grid.read_element(x+i,y+j)==player.read_value() and not self.grid.empty_cell(x+i,y+j)]
 
-            
             #Pour chaque pion voisin adverse:
             for opponant_pawn in neighbours:
                 x_opponant,y_opponant= opponant_pawn #coordonnées du pion
@@ -134,9 +127,7 @@ class Game:
                 res.append(possible_origins[count])
             count+=1
         return(res)
- 
-        
-        
+
     def turn_pawn(self,i,j,player,*tab):
         """ Méthode qui prend en argument deux entiers i, j, un joueur et un tableau, et qui retourne tous les pions (joueur adverse -> joueur courant) entre (i,j) et les positions contenues dans tab, les extrémités cad (i,j) et les couples de tab étant exclues."""
         for pair in tab:
@@ -168,17 +159,12 @@ class Game:
                 else: #diagonale d'équation +x (visualisation dans un repère habituel)
                     for k in range (0, abs(dx)-1):
                         self.replacement(maximum_x-1-k,minimum_y+1+k,player)
-                    
-                    
-                    
-                    
- 
+
     def end_game(self):
         """  Méthode qui ne prend pas d'argument et qui renvoie Vrai si la fin du jeu est atteinte cad si pour aucun des deux joueurs, il n'y a de position admissible """
         if self.valid_positions(self.player1)[1]==[] and self.valid_positions(self.player2)[1]==[]:
             return (True)
-                
-            
+
     def winner (self):
         """ Méthode qui ne prend rien en argument et renvoie un tableau de 2 chaînes de caractère (le nom du vainqueur puis le nom du perdant) si il y a un vainqueur, un message adapté sinon."""
         score_player1=self.player1.read_score() 
@@ -200,7 +186,6 @@ class Game:
             i+=1
         return -1
 
-    
     def empty_game(self):
         """Méthode qui réinitialise le jeu."""
         #Initialisation des positions occupées par les joueurs

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 Created on Wed Dec  7 16:03:34 2016
 Outils pour l'interface graphique : cases du plateau et statistiques
@@ -8,6 +9,8 @@ from PyQt4 import QtCore, QtGui
 from csv import reader,writer
 
 class OthelloCell(QtGui.QLabel):
+    """Classe représentant une case du plateau"""
+
     def __init__(self,color_nb):
         super().__init__()
         self.setFixedSize(60,60)
@@ -55,6 +58,8 @@ def add_name(combo_box,name,names):
         combo_box.addItem(name)
             
 class Profiles:
+    """Classe conservant les profils et statistiques associées"""
+
     def __init__(self):
         """Crée un tableau contenant tous les profils avec leurs statistiques"""
         # Statistiques dans un fichier csv, lecture de chaque ligne du document pour récupérer

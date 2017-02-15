@@ -203,146 +203,62 @@ class Game:
         self.play_one_shot(4,3,self.player1) 
 
     def compute_score(self,pawns,values) : 
+        """Méthode qui renvoie la somme des des pions de pawns pondérés par values"""
         s=0
         for pawn in pawns : 
             s+=values[pawn[0]][pawn[1]]
         return s       
-    #Ajouts alpha-beta : appels de IA_play : rajouter ab_max,ab_min            
-    def AI_play(self,val_pos,AIs_turn,depth,depth0,player,AI_pos,ab_max,ab_min) : #ab_max/min : un seul est signifiant et correspond au max/min des valeurs déjà calculées au même niveau que le noeud courant 
 
-#        print "AI begins {0} {1}".format(val_pos[1][0][0],val_pos[1][0][1])
-#        origins=self.origins(val_pos[1][0][0],val_pos[1][0][1],self.player2)
-#        self.play_one_shot(val_pos[1][0][0],val_pos[1][0][1],self.player2)
-#        self.turn_pawn(val_pos[1][0][0],val_pos[1][0][1],self.player2,*origins)
-#        print "A pawn is turned..."
-    #    print "Entrée dans AI_play, avec depth={0}".format(depth)
-    #    print "val_pos",val_pos
+    def AI_play(self,val_pos,AIs_turn,depth,depth0,player,AI_pos,ab_max,ab_min) : 
+        """Méthode récursive qui met les coordonnées à jouer par l'IA dans AI_pos"""
         if (depth==0) :
             return self.compute_score(self.AI.read_positions(),self.grid.pawn_values)-self.compute_score(player.read_positions(),self.grid.pawn_values)
-#        if(depth==depth0) : 
- #           for i in range (depth0-1) :
-  #              self.grid.nb_killer_move[i]=0 
-   #             for j in range (2) : 
-    #KKKKKILLERMOVE                self.grid.killer_move[i][j]=(-1,-1)
-                
-
-#            return self.AI.read_score()-self.player2.read_score() : ancienne  version DEBILE
-#        val_pos = self.valid_positions(self.AI)
         val_maxi=-1e5
         val_mini=1e5
         if (len(val_pos)==0) :
             if(AIs_turn) : 
-                return self.AI_play(self.simplified_valid_positions(player),1-AIs_turn,depth-1,depth0,player,AI_pos,val_maxi,val_mini)            #Ici : +simplify, - [1]
+                return self.AI_play(self.simplified_valid_positions(player),1-AIs_turn,depth-1,depth0,player,AI_pos,val_maxi,val_mini)
             else : 
                 return self.AI_play(self.simplified_valid_positions(self.AI),1-AIs_turn,depth-1,depth0,player,AI_pos,val_maxi,val_mini)
 
-#            return -1e5
-   #     print "depth≠0 : on contine"
-        #On explore chaque coup possible pour l'AI.
-#        if (self.grid.nb_killer_move[depth-1]!=0) :        #Killer move             
-    #Oui \o/        val_pos.sort()
- #           for i in range (self.grid.nb_killer_move[depth-1]) : 
-  #              index=self.contain_killer_move(val_pos,self.grid.killer_move[depth-1][i])
-   #             if (index>-1) : 
-    #                val_pos=[val_pos[index]]+val_pos[:index-1]+val_pos[index+1:]
         for i in range (len(val_pos)) :
-        #On indique qu'on simule le coup en val_pos[i]
-        #Si c'est au tour de l'AI : on sélectionne le max
             (xpawn,ypawn)=val_pos[i]
             if (AIs_turn) :
-    #            print "AIsturn : play_one_shot en {0},{1}".format(xpawn,ypawn)
                 origins=self.origins(xpawn,ypawn,self.AI)
                 self.play_one_shot(xpawn,ypawn,self.AI)
-    #            print "coup joué"
                 self.turn_pawn(xpawn,ypawn,self.AI,*origins)
-    #            print "pion tourné ; appel à depth-1={0}".format(depth-1)
-                #NB : play_one_shot : pas beau
-    #            print "test : ",player.read_positions()
-                l = self.simplified_valid_positions(player)  #simpl, -[1]
-    #            print "l : fait"
-
+                l = self.simplified_valid_positions(player) 
                 val_move = self.AI_play(l,1-AIs_turn,depth-1,depth0,player,AI_pos,val_maxi,val_mini)
-    #            print "fin appel récursif, on revient à depth = {0}".format(depth)
-
-            #On retire le pion
                 self.grid.make_empty(xpawn,ypawn)
-#                self.grid.write_element(xpawn,ypawn,0)
                 self.turn_pawn(xpawn,ypawn,player,*origins)
                 self.AI.no_more_occupy_position(xpawn,ypawn)
-    #            print "CETTE CASE DOIT ETRE 0000000000 : : : : : : fin AIsturn pour xpawn,ypawn = {0},{1} avec une valeur dans la case de 0 = {2}".format(xpawn,ypawn,self.grid.read_element(xpawn,ypawn))
-
-
                 if(val_move>=ab_min) : 
                     (xnext,ynext)=(xpawn,ypawn)
-#                    if (self.grid.nb_killer_move[depth-1]<2) : 
- #                       self.grid.nb_killer_move[depth-1]+=1
-  #KKKKMMM                  self.grid.killer_move[depth-1][self.grid.nb_killer_move[depth-1]-1]=(xnext,ynext)
+                    if (self.grid.nb_killer_move[depth-1]<2) : 
+                        self.grid.nb_killer_move[depth-1]+=1
+                    self.grid.killer_move[depth-1][self.grid.nb_killer_move[depth-1]-1]=(xnext,ynext)
                     break
-
-    #            print "fin appel récursif, on revient à depth = {0}".format(depth)
                 if (val_maxi<=val_move) :
                     val_maxi=val_move
                     (xnext,ynext)=(xpawn,ypawn)
-        #Sinon : le min
             else :
-    #            print "joueur turn : play_one_shot en {0},{1}".format(xpawn,ypawn)
                 origins=self.origins(xpawn,ypawn,player)
-                self.play_one_shot(xpawn,ypawn,player)    #NB : Accès au nom du joueur ? Tablea
-     #           print "coup joué"
+                self.play_one_shot(xpawn,ypawn,player)    
                 self.turn_pawn(xpawn,ypawn,player,*origins)
-
                 val_move = self.AI_play(self.simplified_valid_positions(self.AI),1-AIs_turn,depth-1,depth0,player,AI_pos,val_maxi,val_mini)
-
-
-                #On retire le pion
                 self.grid.make_empty(xpawn,ypawn)
-#                self.grid.write_element(xpawn,ypawn,0)
                 self.turn_pawn(xpawn,ypawn,self.AI,*origins)
                 player.no_more_occupy_position(xpawn,ypawn)
-      #          print "CETTE CASE DOIT ETRE 0000000000  / / / / / / / / fin joueur turn pour xpawn,ypawn = {0},{1} AVEC UNE VALEUR DANS LA CASE DE 0 = {2}".format(xpawn,ypawn,self.grid.read_element(xpawn,ypawn))
-
-
                 if (val_move<=ab_max) : 
                     (xnext,ynext)=(xpawn,ypawn)
-#                    if (self.grid.nb_killer_move[depth-1]<2) : 
- #                       self.grid.nb_killer_move[depth-1]+=1
-  #KKKKMMMM                  self.grid.killer_move[depth-1][self.grid.nb_killer_move[depth-1]-1]=(xnext,ynext)
+                    if (self.grid.nb_killer_move[depth-1]<2) : 
+                        self.grid.nb_killer_move[depth-1]+=1
+                    self.grid.killer_move[depth-1][self.grid.nb_killer_move[depth-1]-1]=(xnext,ynext)
                     break
                 if (val_mini>=val_move) :
                     val_mini=val_move
                     (xnext,ynext)=(xpawn,ypawn)
-    #En sortie de boucle, (xnext,ynext) contient le coup conduisant au meilleur résultat
-    #Notons que l'AI (ou le joueur) peut se retrouver dans une situation où passer son tour est la meilleure $
-    #=> à rajouter !!! Pour l'instant, on suppose qu'on ne passe pas son tour
-    #Notons que pour la rajouter, il suffit dans la boucle for de faire un coup où on n'appelle pas play_one_$
-
-#        score=-1*self.AI.read_score() + self.player2.read_score()  NBNBNBNB : !!!!!!! ATTENTION : je ne comprends toujours pas j'ai écrit cette ligne !!! Normalement le score renvoyé pour un coup vaut la différence entre les positions occupées par l'AI et celles du joueur non ???
         score=AIs_turn*val_maxi + (1-AIs_turn)*val_mini
         if (depth==depth0) :
             AI_pos[0],AI_pos[1]=xnext,ynext
-#            origins=self.origins(xnext,ynext,self.AI)
-#            self.play_one_shot(xnext,ynext,self.AI)
-#            self.turn_pawn(xnext,ynext,self.AI,*origins)
-#        score+=self.AI.read_score()-self.player2.read_score()        NBNBNB : Normalement la valeur renvoyée ne dépend que de val_maxi/val_mini, faire gaffe !!!
-
-    #    print "ù`ù$^$ù`ù$^$ù`ù$^$ù`^$`ù^!!!!!!!!!! ATTENTION : 6,7 = {0}".format(self.grid.read_element(6,7))
         return score
-
-
-#Pour intégrer l'AI au code dans son ensemble :
-#lancer du jeu => souhaitez-vous une partie à deux joueurs ou contre l'AI => booléen AI
-#si AI : quelle couleur désirez-vous, + quel nom ? (double input)
-#et dans init : self.player1 = player(nom, couleurdonnée)
-#self.AI = player("AI",-1*couleurdonnée)
-#
-#sinon : habituel (double requête de nom)
-#init game : ce qui est déjà là
-#
-#=> du coup, AI est bien un attribut de game, c'est en réalité un player
-#
-#Dans le jeu lui même :
-#il suffit par exemple de faire un test à chaque tour : si le joueur courrant est l'AI,
-#au lieu de faire des inputs, on lance game.AI(self.valid_positions(game.AI),1,depthinitAIl,game.player1)
-#
-#
-#

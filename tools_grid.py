@@ -28,10 +28,6 @@ class Grid:
         
         self.killer_move=[[(-1,-1) for j in range(2)]for i in range (7)]
         self.nb_killer_move=[0 for i in range (7)]
-
-#    def __lshift__(self,pawn1,pawn2,move) :
-         #return killer_map[pawn1[0]][pawn1[1]]<=killer_move[pawn2[0]][pawn2[1]]
-#        return (pawn2 in move)or((not (pawn1 in move))and(not (pawn2 in move)))
     
     def __contains__(self,p):
         """Méthode qui prend en argument un couple et qui renvoie Vrai si les coordonnées sont valides ie bien dans la grille: 0=<x<taille et 0=<y<taille."""

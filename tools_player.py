@@ -43,8 +43,7 @@ class Player:
     
     def no_more_occupy_position(self,i,j):
         """ Méthode qui prend en argument un couple d'enters (i,j) et qui les enlève de la liste des positions occupées par le joueur."""
-        try:
-            #verify_bounds(i,j,8)       #BOF ATTENTION ON FAIT DEJAINTERVENIR LA GRILLE... PPLUTOT A METTRE DANS LE JEU   
+        try:  
             self.used_positions.remove((i,j)) #On ajoute la position à la liste des positions occupées
         except tools.ErrorIndex: #Traitement de l'exception
             print("Hors de la grille ....")

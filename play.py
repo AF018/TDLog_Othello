@@ -62,5 +62,5 @@ while not game.end_game():
     game.current_player=game.opponent(game.current_player)
 
 print("Game Over !")
-#Quand lejeu s'arrête,on détermine le gagnant:
+#Quand le jeu s'arrête, on détermine le gagnant:
 game.winner()[0] #renvoie une chaîne de caractère
